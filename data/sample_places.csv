@@ -1,0 +1,740 @@
+id,name,amenity,lat,lon,rating,district
+126,Karas #37,restaurant,40.182983,44.51432,4.8,Center
+406,Plus Pharm #47,pharmacy,40.205341,44.526346,3.7,Arabkir
+138,Lavash #49,restaurant,40.17856,44.5095,4.6,Center
+312,Lumen #43,cafe,40.203407,44.512981,4.1,Arabkir
+124,Wine Republic #35,restaurant,40.169244,44.524093,4.3,Center
+671,Med Pharm #42,pharmacy,40.165802,44.470731,3.5,Malatia
+148,Caucasus #59,restaurant,40.175631,44.521429,4.3,Center
+493,Gata House #44,restaurant,40.170141,44.516602,3.7,Kentron-S
+187,Dolmama #8,restaurant,40.18375,44.506853,4.9,Center
+477,Dolmama #28,restaurant,40.171161,44.509657,4.8,Kentron-S
+111,Aperto #22,cafe,40.17554,44.506412,3.8,Center
+548,Aperto #9,cafe,40.21701,44.469702,4.6,Davtashen
+667,Aibolit #38,pharmacy,40.168557,44.472536,3.1,Malatia
+417,Republic #58,bar,40.199627,44.517095,3.8,Arabkir
+519,Plus Pharm #70,pharmacy,40.180885,44.508363,3.4,Kentron-S
+633,Aperto #4,cafe,40.154994,44.46729,4.5,Malatia
+433,Caffeine Lab #74,cafe,40.175856,44.507094,3.8,Kentron-S
+590,Karas #51,restaurant,40.14855,44.524356,4.8,Erebuni
+416,Stop Club #57,bar,40.201014,44.536142,4.3,Arabkir
+36,The Espresso #37,cafe,40.184032,44.518142,4.2,Center
+71,Lumen #72,cafe,40.188648,44.491682,3.9,Center
+147,Aregak #58,restaurant,40.177292,44.511866,3.6,Center
+646,Karas #17,restaurant,40.158429,44.464799,4.3,Malatia
+296,Caffeine Lab #27,cafe,40.201748,44.507098,4.0,Arabkir
+626,Caffeine Lab #87,cafe,40.159915,44.465264,4.5,Malatia
+82,Lumen #83,cafe,40.181688,44.517512,3.9,Center
+280,Republic #11,bar,40.172331,44.50275,4.4,Center
+379,Sherep #20,restaurant,40.207311,44.502782,4.2,Arabkir
+654,Caucasus #25,restaurant,40.16199,44.456413,4.5,Malatia
+52,Lumen #53,cafe,40.175632,44.512168,3.5,Center
+53,Sketch #54,cafe,40.182364,44.5115,3.7,Center
+303,The Espresso #34,cafe,40.198262,44.524363,3.9,Arabkir
+3,The Espresso #4,cafe,40.172788,44.50598,4.3,Center
+620,Sip #81,cafe,40.159251,44.45497,4.7,Malatia
+185,Sherep #6,restaurant,40.173458,44.511161,4.5,Center
+570,Republic #31,bar,40.204608,44.479318,4.8,Davtashen
+122,Anteb #33,restaurant,40.175751,44.525476,4.8,Center
+736,12 Tables #17,bar,40.197477,44.555793,3.7,Nor-Nork
+567,Health+ #28,pharmacy,40.217298,44.474875,3.8,Davtashen
+594,Wine Republic #55,restaurant,40.143069,44.539891,3.9,Erebuni
+467,Aregak #18,restaurant,40.168908,44.501791,3.8,Kentron-S
+297,Aperto #28,cafe,40.208627,44.531328,3.7,Arabkir
+398,City Pharm #39,pharmacy,40.212562,44.52956,4.1,Arabkir
+370,Karas #11,restaurant,40.214424,44.521121,4.0,Arabkir
+318,Caffeine Lab #49,cafe,40.207332,44.529301,4.7,Arabkir
+269,12 Tables #90,bar,40.181412,44.519024,4.7,Center
+207,Sherep #28,restaurant,40.179814,44.511927,3.7,Center
+476,Gata House #27,restaurant,40.17016,44.511981,4.8,Kentron-S
+347,Karas #78,restaurant,40.208448,44.527576,3.8,Arabkir
+12,Coffeeshop Co #13,cafe,40.17301,44.517152,4.8,Center
+275,12 Tables #6,bar,40.186366,44.51974,4.3,Center
+482,Gata House #33,restaurant,40.1716,44.518058,3.7,Kentron-S
+378,Gata House #19,restaurant,40.20383,44.521208,3.8,Arabkir
+528,Stop Club #79,bar,40.175306,44.507306,4.3,Kentron-S
+464,Wine Republic #15,restaurant,40.160522,44.50348,4.3,Kentron-S
+636,Karas #7,restaurant,40.159506,44.480165,4.7,Malatia
+217,Wine Republic #38,restaurant,40.17205,44.516008,4.9,Center
+731,Natali Pharm #12,pharmacy,40.19369,44.56984,4.1,Nor-Nork
+357,Aregak #88,restaurant,40.205783,44.508596,3.9,Arabkir
+154,Lavash #65,restaurant,40.184126,44.516478,4.8,Center
+65,Achajour #66,cafe,40.172944,44.522096,4.5,Center
+619,Green Bean #80,cafe,40.157296,44.472168,4.6,Malatia
+158,Lavash #69,restaurant,40.180169,44.520527,3.5,Center
+58,Caffeine Lab #59,cafe,40.17967,44.513055,4.3,Center
+37,Green Bean #38,cafe,40.169784,44.511421,4.4,Center
+446,Sketch #87,cafe,40.16288,44.508632,4.3,Kentron-S
+5,Achajour #6,cafe,40.183397,44.51892,4.1,Center
+8,Aperto #9,cafe,40.180501,44.508901,4.3,Center
+574,Sip #35,cafe,40.142194,44.529161,3.6,Erebuni
+603,Lavash #64,restaurant,40.150261,44.530895,3.7,Erebuni
+664,Plus Pharm #35,pharmacy,40.172494,44.460823,3.4,Malatia
+239,Wine Republic #60,restaurant,40.187307,44.513621,3.9,Center
+232,Lavash #53,restaurant,40.190307,44.501164,4.4,Center
+692,Lumen #63,cafe,40.18982,44.570557,4.5,Nor-Nork
+39,The Espresso #40,cafe,40.177157,44.504617,4.1,Center
+386,Med Pharm #27,pharmacy,40.197898,44.521145,4.4,Arabkir
+310,Kupatak #41,cafe,40.213889,44.507245,3.6,Arabkir
+478,Sherep #29,restaurant,40.168931,44.494606,4.8,Kentron-S
+256,Liberty Bar #77,bar,40.181452,44.517252,3.6,Center
+2,Green Bean #3,cafe,40.169303,44.522178,3.5,Center
+332,Sketch #63,cafe,40.208282,44.529123,3.9,Arabkir
+415,Tap #56,bar,40.204987,44.525544,4.5,Arabkir
+480,Aregak #31,restaurant,40.167823,44.511604,4.2,Kentron-S
+659,Dolmama #30,restaurant,40.154199,44.461559,4.3,Malatia
+47,Lumen #48,cafe,40.186247,44.506095,3.6,Center
+715,Gata House #86,restaurant,40.190467,44.563212,4.7,Nor-Nork
+703,Anteb #74,restaurant,40.198387,44.561528,4.5,Nor-Nork
+559,Anteb #20,restaurant,40.221478,44.466366,4.6,Davtashen
+112,Kupatak #23,cafe,40.181269,44.523315,4.5,Center
+289,The Loft #20,bar,40.186609,44.506528,4.9,Center
+568,Pharm Express #29,pharmacy,40.212872,44.47025,3.6,Davtashen
+93,Kupatak #4,cafe,40.183928,44.508258,4.0,Center
+455,Sketch #6,cafe,40.164634,44.512607,4.7,Kentron-S
+647,Sherep #18,restaurant,40.159021,44.474813,4.6,Malatia
+114,Sketch #25,cafe,40.184488,44.501094,4.5,Center
+236,Wine Republic #57,restaurant,40.183008,44.513796,3.9,Center
+240,Natali Pharm #61,pharmacy,40.172168,44.508917,4.0,Center
+231,Gata House #52,restaurant,40.17768,44.504488,3.8,Center
+562,Aregak #23,restaurant,40.222018,44.465471,3.6,Davtashen
+609,Health+ #70,pharmacy,40.15365,44.53676,3.2,Erebuni
+595,Aregak #56,restaurant,40.152754,44.530387,3.8,Erebuni
+100,Achajour #11,cafe,40.177979,44.507465,3.7,Center
+235,Dolmama #56,restaurant,40.179798,44.510782,3.7,Center
+535,The Loft #86,bar,40.16815,44.505871,4.6,Kentron-S
+336,Achajour #67,cafe,40.216598,44.531251,4.5,Arabkir
+345,Aregak #76,restaurant,40.207808,44.523712,4.7,Arabkir
+399,Med Pharm #40,pharmacy,40.210893,44.516341,3.2,Arabkir
+566,Health+ #27,pharmacy,40.222601,44.49384,3.2,Davtashen
+683,The Espresso #54,cafe,40.182464,44.565043,4.4,Nor-Nork
+227,Anteb #48,restaurant,40.180991,44.513436,4.2,Center
+729,City Pharm #10,pharmacy,40.187238,44.577555,4.2,Nor-Nork
+513,Plus Pharm #64,pharmacy,40.171999,44.501098,3.4,Kentron-S
+618,Sketch #79,cafe,40.161353,44.456341,4.8,Malatia
+7,Achajour #8,cafe,40.17572,44.522463,4.0,Center
+564,Sherep #25,restaurant,40.225005,44.474763,3.6,Davtashen
+726,Sherep #7,restaurant,40.194535,44.558403,4.0,Nor-Nork
+156,Lavash #67,restaurant,40.190476,44.497143,3.8,Center
+80,Coffeeshop Co #81,cafe,40.184348,44.506548,4.4,Center
+42,Kupatak #43,cafe,40.18565,44.51636,3.6,Center
+694,Sketch #65,cafe,40.207272,44.574667,4.2,Nor-Nork
+260,The Loft #81,bar,40.189025,44.510542,4.5,Center
+684,Caffeine Lab #55,cafe,40.197906,44.565289,4.0,Nor-Nork
+23,Coffeeshop Co #24,cafe,40.193568,44.519017,3.7,Center
+549,Coffeeshop Co #10,cafe,40.209856,44.460542,3.6,Davtashen
+702,Sherep #73,restaurant,40.188547,44.561225,4.1,Nor-Nork
+648,Anteb #19,restaurant,40.168053,44.464558,4.3,Malatia
+340,The Espresso #71,cafe,40.201894,44.505628,3.6,Arabkir
+730,Pharm Express #11,pharmacy,40.194133,44.576996,3.2,Nor-Nork
+104,Green Bean #15,cafe,40.185045,44.504882,4.0,Center
+552,Tavern #13,restaurant,40.201063,44.467448,4.1,Davtashen
+361,Caucasus #2,restaurant,40.213273,44.522939,4.9,Arabkir
+460,Aregak #11,restaurant,40.171117,44.516298,3.9,Kentron-S
+199,Aregak #20,restaurant,40.18843,44.522674,4.7,Center
+541,Aperto #2,cafe,40.201731,44.464584,4.4,Davtashen
+375,Karas #16,restaurant,40.204063,44.509601,4.4,Arabkir
+520,Beatles Pub #71,bar,40.169887,44.500854,4.7,Kentron-S
+445,Achajour #86,cafe,40.161901,44.5164,4.4,Kentron-S
+97,The Espresso #8,cafe,40.191511,44.51794,4.2,Center
+511,Natali Pharm #62,pharmacy,40.168061,44.500223,3.3,Kentron-S
+128,Aregak #39,restaurant,40.184234,44.512725,4.1,Center
+720,Sherep #1,restaurant,40.196663,44.564621,3.7,Nor-Nork
+509,Aregak #60,restaurant,40.165556,44.498979,4.5,Kentron-S
+18,Caffeine Lab #19,cafe,40.192951,44.5045,4.4,Center
+485,Wine Republic #36,restaurant,40.175924,44.497491,4.8,Kentron-S
+162,Caucasus #73,restaurant,40.177307,44.519211,4.3,Center
+665,Pharm Express #36,pharmacy,40.155081,44.47642,4.4,Malatia
+118,The Espresso #29,cafe,40.183988,44.510848,4.1,Center
+488,Caucasus #39,restaurant,40.169894,44.52182,4.6,Kentron-S
+518,Natali Pharm #69,pharmacy,40.169795,44.519545,3.3,Kentron-S
+221,Wine Republic #42,restaurant,40.174446,44.51638,4.6,Center
+84,Coffeeshop Co #85,cafe,40.18507,44.511318,3.9,Center
+285,Liberty Bar #16,bar,40.177185,44.519037,3.7,Center
+249,Med Pharm #70,pharmacy,40.183389,44.512856,4.5,Center
+254,Alfa-Farm #75,pharmacy,40.183732,44.50669,4.4,Center
+466,Dolmama #17,restaurant,40.183513,44.503523,3.6,Kentron-S
+704,Tavern #75,restaurant,40.184705,44.564252,3.6,Nor-Nork
+696,Coffeeshop Co #67,cafe,40.191766,44.54937,4.6,Nor-Nork
+403,Med Pharm #44,pharmacy,40.203644,44.514168,3.8,Arabkir
+711,Anteb #82,restaurant,40.195474,44.560833,4.0,Nor-Nork
+220,Anteb #41,restaurant,40.188196,44.520877,4.8,Center
+183,Lavash #4,restaurant,40.179545,44.507743,4.2,Center
+32,Lumen #33,cafe,40.178989,44.512114,4.2,Center
+422,Achajour #63,cafe,40.171439,44.50008,4.5,Kentron-S
+24,Aperto #25,cafe,40.177384,44.516519,3.6,Center
+712,Karas #83,restaurant,40.201522,44.565428,3.8,Nor-Nork
+653,Anteb #24,restaurant,40.169473,44.472023,4.7,Malatia
+142,Gata House #53,restaurant,40.180678,44.511907,4.7,Center
+442,Coffeeshop Co #83,cafe,40.162028,44.508996,3.6,Kentron-S
+547,Lumen #8,cafe,40.218807,44.471709,4.3,Davtashen
+129,Sherep #40,restaurant,40.184211,44.510857,4.2,Center
+91,Lumen #2,cafe,40.186743,44.534132,4.0,Center
+470,Caucasus #21,restaurant,40.170114,44.52247,3.7,Kentron-S
+584,Achajour #45,cafe,40.147527,44.540969,3.9,Erebuni
+136,Aregak #47,restaurant,40.189668,44.520415,3.5,Center
+56,The Espresso #57,cafe,40.17787,44.502255,4.6,Center
+700,Sip #71,cafe,40.194459,44.570093,3.6,Nor-Nork
+200,Dolmama #21,restaurant,40.184722,44.514035,4.8,Center
+638,Caucasus #9,restaurant,40.161289,44.475237,4.3,Malatia
+279,Calumet #10,bar,40.192981,44.522723,4.4,Center
+9,Caffeine Lab #10,cafe,40.177375,44.531056,4.4,Center
+99,Caffeine Lab #10,cafe,40.188717,44.518751,4.5,Center
+193,Aregak #14,restaurant,40.181518,44.505782,3.8,Center
+532,Beatles Pub #83,bar,40.170182,44.512777,4.6,Kentron-S
+521,Beatles Pub #72,bar,40.174772,44.518522,4.5,Kentron-S
+368,Aregak #9,restaurant,40.212314,44.505191,4.2,Arabkir
+295,Kupatak #26,cafe,40.20173,44.514452,4.5,Arabkir
+688,Achajour #59,cafe,40.197285,44.564001,4.1,Nor-Nork
+377,Dolmama #18,restaurant,40.199491,44.511963,4.7,Arabkir
+660,Natali Pharm #31,pharmacy,40.165256,44.463658,4.1,Malatia
+705,Gata House #76,restaurant,40.185088,44.567326,4.1,Nor-Nork
+529,Calumet #80,bar,40.168741,44.519793,4.0,Kentron-S
+308,Aperto #39,cafe,40.204649,44.496505,3.8,Arabkir
+622,Sketch #83,cafe,40.170158,44.476288,4.5,Malatia
+394,Plus Pharm #35,pharmacy,40.219183,44.529347,4.2,Arabkir
+591,Lavash #52,restaurant,40.139853,44.549156,4.9,Erebuni
+270,Tap #1,bar,40.190562,44.51274,5.0,Center
+407,Pharm Express #48,pharmacy,40.200569,44.527264,4.2,Arabkir
+461,Sherep #12,restaurant,40.177706,44.504612,5.0,Kentron-S
+273,The Loft #4,bar,40.179334,44.536517,3.7,Center
+627,Coffeeshop Co #88,cafe,40.157769,44.482263,3.8,Malatia
+48,Lumen #49,cafe,40.179061,44.495579,4.7,Center
+223,Caucasus #44,restaurant,40.177889,44.503183,4.5,Center
+381,Aregak #22,restaurant,40.202782,44.520718,5.0,Arabkir
+313,Sip #44,cafe,40.212886,44.518774,3.8,Arabkir
+167,Anteb #78,restaurant,40.17971,44.513737,3.9,Center
+733,Med Pharm #14,pharmacy,40.193791,44.566208,3.1,Nor-Nork
+261,Calumet #82,bar,40.180093,44.505986,4.8,Center
+604,Tavern #65,restaurant,40.141633,44.540678,4.5,Erebuni
+389,City Pharm #30,pharmacy,40.197625,44.513738,3.6,Arabkir
+244,Med Pharm #65,pharmacy,40.185752,44.509681,4.0,Center
+86,Aperto #87,cafe,40.190894,44.507349,4.7,Center
+294,12 Tables #25,bar,40.184436,44.513275,4.7,Center
+602,Aregak #63,restaurant,40.146676,44.526616,4.0,Erebuni
+592,Caucasus #53,restaurant,40.148197,44.543556,4.1,Erebuni
+175,Aregak #86,restaurant,40.182668,44.515294,3.9,Center
+369,Gata House #10,restaurant,40.187881,44.518828,3.9,Arabkir
+72,Lumen #73,cafe,40.182416,44.516083,3.7,Center
+252,Health+ #73,pharmacy,40.181521,44.512092,3.5,Center
+573,Coffeeshop Co #34,cafe,40.135252,44.530586,4.1,Erebuni
+165,Gata House #76,restaurant,40.180593,44.502084,4.9,Center
+673,12 Tables #44,bar,40.159501,44.460365,3.6,Malatia
+459,Achajour #10,cafe,40.163647,44.518116,4.7,Kentron-S
+388,Med Pharm #29,pharmacy,40.202142,44.528798,3.1,Arabkir
+215,Lavash #36,restaurant,40.188644,44.509509,4.8,Center
+515,Natali Pharm #66,pharmacy,40.16059,44.491609,3.9,Kentron-S
+582,The Espresso #43,cafe,40.146453,44.524748,4.6,Erebuni
+677,Caffeine Lab #48,cafe,40.190398,44.570377,4.9,Nor-Nork
+669,Health+ #40,pharmacy,40.155847,44.444372,4.2,Malatia
+481,Aregak #32,restaurant,40.174233,44.503281,3.7,Kentron-S
+641,Caucasus #12,restaurant,40.17134,44.466947,4.2,Malatia
+306,Green Bean #37,cafe,40.206,44.521469,3.8,Arabkir
+437,Caffeine Lab #78,cafe,40.183165,44.515172,4.3,Kentron-S
+615,The Espresso #76,cafe,40.161863,44.464013,4.3,Malatia
+173,Karas #84,restaurant,40.192463,44.520531,4.2,Center
+593,Karas #54,restaurant,40.141806,44.523404,4.2,Erebuni
+119,Sketch #30,cafe,40.18512,44.522399,4.8,Center
+55,Sketch #56,cafe,40.189323,44.512992,3.9,Center
+655,Anteb #26,restaurant,40.154488,44.46774,4.4,Malatia
+117,Sip #28,cafe,40.186811,44.511531,4.8,Center
+693,Green Bean #64,cafe,40.186518,44.5696,4.9,Nor-Nork
+495,Lavash #46,restaurant,40.169118,44.505649,4.7,Kentron-S
+412,12 Tables #53,bar,40.208005,44.525139,4.3,Arabkir
+601,Wine Republic #62,restaurant,40.139091,44.540557,4.3,Erebuni
+315,The Espresso #46,cafe,40.205146,44.525564,4.4,Arabkir
+70,The Espresso #71,cafe,40.173575,44.511294,4.0,Center
+322,Sip #53,cafe,40.198152,44.517204,4.4,Arabkir
+637,Anteb #8,restaurant,40.162462,44.460972,4.3,Malatia
+247,Plus Pharm #68,pharmacy,40.183445,44.500296,4.3,Center
+182,Sherep #3,restaurant,40.175917,44.515273,3.5,Center
+499,Aregak #50,restaurant,40.172728,44.515702,4.0,Kentron-S
+473,Caucasus #24,restaurant,40.171278,44.51807,4.9,Kentron-S
+681,Kupatak #52,cafe,40.197255,44.572274,4.1,Nor-Nork
+612,Liberty Bar #73,bar,40.152126,44.541562,4.6,Erebuni
+675,Liberty Bar #46,bar,40.165361,44.473164,4.1,Malatia
+371,Caucasus #12,restaurant,40.200931,44.512072,3.6,Arabkir
+305,Aperto #36,cafe,40.201418,44.512821,3.6,Arabkir
+299,Caffeine Lab #30,cafe,40.205998,44.526869,4.1,Arabkir
+67,Lumen #68,cafe,40.188495,44.513905,5.0,Center
+438,The Espresso #79,cafe,40.174844,44.512808,4.3,Kentron-S
+4,Kupatak #5,cafe,40.173491,44.517248,3.9,Center
+333,Caffeine Lab #64,cafe,40.204202,44.520841,4.4,Arabkir
+209,Karas #30,restaurant,40.171437,44.509823,4.1,Center
+393,City Pharm #34,pharmacy,40.206164,44.522909,3.9,Arabkir
+484,Lavash #35,restaurant,40.170189,44.503061,4.4,Kentron-S
+452,Aperto #3,cafe,40.167772,44.500222,4.7,Kentron-S
+643,Karas #14,restaurant,40.16235,44.472578,4.7,Malatia
+109,Green Bean #20,cafe,40.184258,44.526884,3.5,Center
+545,Coffeeshop Co #6,cafe,40.217193,44.462276,4.0,Davtashen
+676,Calumet #47,bar,40.164819,44.469235,3.7,Malatia
+197,Wine Republic #18,restaurant,40.177903,44.503028,3.9,Center
+374,Anteb #15,restaurant,40.204973,44.522537,3.5,Arabkir
+607,Aibolit #68,pharmacy,40.144794,44.521385,3.8,Erebuni
+468,Anteb #19,restaurant,40.160033,44.504181,3.9,Kentron-S
+390,Plus Pharm #31,pharmacy,40.21337,44.523988,4.3,Arabkir
+83,Sip #84,cafe,40.172954,44.50984,4.8,Center
+376,Aregak #17,restaurant,40.202668,44.526352,3.6,Arabkir
+586,Lavash #47,restaurant,40.146898,44.523072,4.0,Erebuni
+530,Beatles Pub #81,bar,40.170384,44.506411,3.6,Kentron-S
+565,Plus Pharm #26,pharmacy,40.215453,44.470593,3.0,Davtashen
+471,Tavern #22,restaurant,40.172947,44.51278,4.7,Kentron-S
+724,Gata House #5,restaurant,40.182559,44.557607,4.2,Nor-Nork
+334,Caffeine Lab #65,cafe,40.20327,44.5318,4.1,Arabkir
+123,Lavash #34,restaurant,40.182402,44.529511,4.5,Center
+15,The Espresso #16,cafe,40.180068,44.523679,4.9,Center
+63,Sip #64,cafe,40.194261,44.523826,4.5,Center
+383,Caucasus #24,restaurant,40.206658,44.509935,4.8,Arabkir
+258,Calumet #79,bar,40.195518,44.518526,5.0,Center
+237,Wine Republic #58,restaurant,40.176023,44.515811,4.0,Center
+188,Sherep #9,restaurant,40.176396,44.49914,4.5,Center
+690,Achajour #61,cafe,40.181947,44.561003,4.4,Nor-Nork
+101,Achajour #12,cafe,40.177513,44.506068,4.0,Center
+497,Karas #48,restaurant,40.1623,44.507432,4.0,Kentron-S
+337,Sip #68,cafe,40.210935,44.510523,4.9,Arabkir
+233,Sherep #54,restaurant,40.174857,44.50937,3.8,Center
+16,Kupatak #17,cafe,40.176299,44.526212,4.7,Center
+127,Wine Republic #38,restaurant,40.189337,44.514404,4.0,Center
+29,Lumen #30,cafe,40.181108,44.51213,4.3,Center
+487,Tavern #38,restaurant,40.167858,44.509213,4.9,Kentron-S
+475,Tavern #26,restaurant,40.168272,44.495616,4.8,Kentron-S
+614,Stop Club #75,bar,40.13588,44.55302,3.7,Erebuni
+14,Coffeeshop Co #15,cafe,40.183841,44.520879,4.6,Center
+291,Liberty Bar #22,bar,40.173344,44.508661,3.8,Center
+268,Beatles Pub #89,bar,40.182321,44.495903,3.8,Center
+558,Anteb #19,restaurant,40.218127,44.473088,4.5,Davtashen
+410,Liberty Bar #51,bar,40.200001,44.535612,3.6,Arabkir
+259,Liberty Bar #80,bar,40.190838,44.502968,3.7,Center
+738,Calumet #19,bar,40.192404,44.568519,4.4,Nor-Nork
+578,Lumen #39,cafe,40.145544,44.525033,3.7,Erebuni
+81,Kupatak #82,cafe,40.18853,44.516652,4.0,Center
+263,Beatles Pub #84,bar,40.17022,44.528925,4.2,Center
+639,Dolmama #10,restaurant,40.162283,44.458319,4.6,Malatia
+710,Dolmama #81,restaurant,40.196114,44.564567,3.6,Nor-Nork
+439,Lumen #80,cafe,40.178555,44.508142,4.5,Kentron-S
+353,Wine Republic #84,restaurant,40.205764,44.515401,4.3,Arabkir
+208,Dolmama #29,restaurant,40.179977,44.52303,4.8,Center
+402,Plus Pharm #43,pharmacy,40.20239,44.522228,3.1,Arabkir
+323,Caffeine Lab #54,cafe,40.210619,44.520376,4.0,Arabkir
+96,Sip #7,cafe,40.188689,44.513,3.7,Center
+45,Aperto #46,cafe,40.181277,44.522238,4.2,Center
+597,Anteb #58,restaurant,40.145516,44.537604,4.7,Erebuni
+213,Dolmama #34,restaurant,40.177642,44.50708,4.8,Center
+354,Gata House #85,restaurant,40.205641,44.519121,4.7,Arabkir
+527,12 Tables #78,bar,40.17105,44.512429,4.2,Kentron-S
+649,Tavern #20,restaurant,40.162007,44.451305,4.1,Malatia
+420,Kupatak #61,cafe,40.169591,44.501768,4.1,Kentron-S
+68,Caffeine Lab #69,cafe,40.17432,44.513677,3.7,Center
+434,Sketch #75,cafe,40.166112,44.527933,4.4,Kentron-S
+50,Lumen #51,cafe,40.170254,44.517365,4.8,Center
+500,Dolmama #51,restaurant,40.165748,44.499911,4.6,Kentron-S
+143,Sherep #54,restaurant,40.182251,44.515322,3.5,Center
+159,Lavash #70,restaurant,40.178513,44.496895,4.2,Center
+155,Caucasus #66,restaurant,40.176885,44.511472,4.5,Center
+722,Anteb #3,restaurant,40.201322,44.558628,4.2,Nor-Nork
+10,Green Bean #11,cafe,40.179229,44.506102,3.6,Center
+190,Tavern #11,restaurant,40.180718,44.510216,4.4,Center
+450,Sip #1,cafe,40.168406,44.516939,4.5,Kentron-S
+492,Caucasus #43,restaurant,40.165675,44.503826,4.9,Kentron-S
+505,Tavern #56,restaurant,40.160646,44.525189,3.6,Kentron-S
+507,Wine Republic #58,restaurant,40.173037,44.520224,3.7,Kentron-S
+169,Tavern #80,restaurant,40.163892,44.509122,3.9,Center
+418,12 Tables #59,bar,40.201764,44.51921,4.7,Arabkir
+396,Alfa-Farm #37,pharmacy,40.210008,44.518816,3.6,Arabkir
+205,Wine Republic #26,restaurant,40.179149,44.520035,3.5,Center
+425,Caffeine Lab #66,cafe,40.167618,44.512887,5.0,Kentron-S
+630,Caffeine Lab #1,cafe,40.155502,44.467554,3.7,Malatia
+73,Green Bean #74,cafe,40.183592,44.519023,3.9,Center
+623,Sip #84,cafe,40.157647,44.460192,4.4,Malatia
+380,Caucasus #21,restaurant,40.207743,44.507406,4.8,Arabkir
+719,Dolmama #90,restaurant,40.182456,44.561887,3.9,Nor-Nork
+682,Aperto #53,cafe,40.196137,44.559723,3.9,Nor-Nork
+479,Anteb #30,restaurant,40.172072,44.509234,4.4,Kentron-S
+311,Aperto #42,cafe,40.211602,44.525602,4.0,Arabkir
+411,Stop Club #52,bar,40.202052,44.526717,4.8,Arabkir
+248,Med Pharm #69,pharmacy,40.186779,44.509429,4.2,Center
+335,Caffeine Lab #66,cafe,40.209997,44.523234,4.4,Arabkir
+196,Gata House #17,restaurant,40.176642,44.523883,4.5,Center
+469,Aregak #20,restaurant,40.163948,44.504987,3.9,Kentron-S
+674,Beatles Pub #45,bar,40.165064,44.473693,4.0,Malatia
+440,Caffeine Lab #81,cafe,40.178977,44.518076,4.1,Kentron-S
+426,The Espresso #67,cafe,40.169912,44.510284,4.1,Kentron-S
+146,Anteb #57,restaurant,40.179377,44.520323,4.5,Center
+364,Lavash #5,restaurant,40.209908,44.516683,3.5,Arabkir
+449,Kupatak #90,cafe,40.168375,44.50377,4.5,Kentron-S
+517,Natali Pharm #68,pharmacy,40.167239,44.501375,3.1,Kentron-S
+723,Wine Republic #4,restaurant,40.188749,44.564721,4.5,Nor-Nork
+298,Lumen #29,cafe,40.204214,44.502891,5.0,Arabkir
+435,Coffeeshop Co #76,cafe,40.178484,44.509638,3.7,Kentron-S
+290,Tap #21,bar,40.180423,44.509892,5.0,Center
+691,Coffeeshop Co #62,cafe,40.206753,44.573336,4.9,Nor-Nork
+526,Tap #77,bar,40.164558,44.509976,4.8,Kentron-S
+212,Karas #33,restaurant,40.190747,44.514206,4.6,Center
+625,Achajour #86,cafe,40.164297,44.459899,4.6,Malatia
+427,Sketch #68,cafe,40.169659,44.525607,3.7,Kentron-S
+451,Coffeeshop Co #2,cafe,40.167876,44.500906,4.4,Kentron-S
+300,Sip #31,cafe,40.200643,44.534988,4.0,Arabkir
+319,Green Bean #50,cafe,40.20701,44.515311,4.7,Arabkir
+678,Green Bean #49,cafe,40.195057,44.570377,4.5,Nor-Nork
+6,Lumen #7,cafe,40.19216,44.509975,4.0,Center
+234,Dolmama #55,restaurant,40.177266,44.505514,4.8,Center
+266,12 Tables #87,bar,40.184094,44.530684,4.5,Center
+141,Karas #52,restaurant,40.181538,44.507397,3.8,Center
+540,Coffeeshop Co #1,cafe,40.210638,44.468005,3.8,Davtashen
+282,Beatles Pub #13,bar,40.177151,44.497886,4.8,Center
+474,Karas #25,restaurant,40.177852,44.513516,4.7,Kentron-S
+284,Republic #15,bar,40.179961,44.503438,4.0,Center
+431,Sketch #72,cafe,40.164588,44.509063,4.3,Kentron-S
+523,Republic #74,bar,40.16379,44.512356,4.2,Kentron-S
+537,Republic #88,bar,40.164595,44.501199,4.0,Kentron-S
+372,Aregak #13,restaurant,40.191262,44.518028,4.3,Arabkir
+657,Wine Republic #28,restaurant,40.162968,44.462709,4.1,Malatia
+132,Tavern #43,restaurant,40.186603,44.509145,4.4,Center
+304,Sip #35,cafe,40.193685,44.527982,3.9,Arabkir
+408,City Pharm #49,pharmacy,40.210095,44.525014,3.5,Arabkir
+321,Sketch #52,cafe,40.202515,44.516178,3.8,Arabkir
+516,City Pharm #67,pharmacy,40.178235,44.514438,3.9,Kentron-S
+222,Sherep #43,restaurant,40.184098,44.513225,3.6,Center
+349,Karas #80,restaurant,40.20338,44.510039,5.0,Arabkir
+550,Karas #11,restaurant,40.199626,44.471133,4.1,Davtashen
+216,Tavern #37,restaurant,40.181654,44.522259,4.7,Center
+21,Aperto #22,cafe,40.172543,44.507493,4.8,Center
+64,Caffeine Lab #65,cafe,40.187267,44.510433,3.8,Center
+98,Green Bean #9,cafe,40.178709,44.513261,4.6,Center
+108,Achajour #19,cafe,40.184698,44.503445,4.6,Center
+85,Kupatak #86,cafe,40.181491,44.512401,4.8,Center
+88,Kupatak #89,cafe,40.177533,44.499645,4.1,Center
+229,Tavern #50,restaurant,40.185213,44.510172,3.6,Center
+714,Lavash #85,restaurant,40.188859,44.565336,4.7,Nor-Nork
+61,Aperto #62,cafe,40.193645,44.521531,4.8,Center
+531,12 Tables #82,bar,40.158528,44.522336,4.4,Kentron-S
+317,Lumen #48,cafe,40.209377,44.531142,4.3,Arabkir
+524,Republic #75,bar,40.168013,44.506602,4.7,Kentron-S
+414,Tap #55,bar,40.202719,44.509567,4.0,Arabkir
+409,Alfa-Farm #50,pharmacy,40.205817,44.512155,4.2,Arabkir
+264,Republic #85,bar,40.18372,44.516565,4.5,Center
+503,Wine Republic #54,restaurant,40.171609,44.499864,4.6,Kentron-S
+257,Stop Club #78,bar,40.180158,44.51724,4.1,Center
+17,Achajour #18,cafe,40.191092,44.516701,4.0,Center
+588,Caucasus #49,restaurant,40.140728,44.550627,4.9,Erebuni
+732,Aibolit #13,pharmacy,40.201529,44.554202,3.2,Nor-Nork
+40,Kupatak #41,cafe,40.1811,44.523903,3.6,Center
+153,Lavash #64,restaurant,40.18008,44.503947,3.9,Center
+424,Caffeine Lab #65,cafe,40.171058,44.518064,4.4,Kentron-S
+120,Aregak #31,restaurant,40.181171,44.526903,4.5,Center
+293,The Loft #24,bar,40.178772,44.530075,3.8,Center
+569,Republic #30,bar,40.216469,44.466999,3.6,Davtashen
+351,Lavash #82,restaurant,40.214913,44.51815,4.7,Arabkir
+274,Republic #5,bar,40.180815,44.505102,4.2,Center
+560,Tavern #21,restaurant,40.212221,44.479365,4.2,Davtashen
+533,12 Tables #84,bar,40.173963,44.502038,4.0,Kentron-S
+512,Health+ #63,pharmacy,40.173445,44.508209,3.7,Kentron-S
+465,Sherep #16,restaurant,40.172645,44.507601,4.7,Kentron-S
+501,Dolmama #52,restaurant,40.155889,44.50788,4.7,Kentron-S
+551,Dolmama #12,restaurant,40.223207,44.468993,4.9,Davtashen
+283,Liberty Bar #14,bar,40.186946,44.507403,4.1,Center
+116,The Espresso #27,cafe,40.169251,44.517473,4.3,Center
+536,The Loft #87,bar,40.166607,44.507937,4.7,Kentron-S
+652,Wine Republic #23,restaurant,40.15566,44.462612,3.9,Malatia
+211,Aregak #32,restaurant,40.183629,44.509531,4.0,Center
+277,Liberty Bar #8,bar,40.188307,44.511801,3.6,Center
+413,Stop Club #54,bar,40.201377,44.520458,4.0,Arabkir
+713,Caucasus #84,restaurant,40.194726,44.559539,3.9,Nor-Nork
+342,Kupatak #73,cafe,40.198739,44.505987,4.3,Arabkir
+725,Wine Republic #6,restaurant,40.194297,44.578302,4.0,Nor-Nork
+486,Gata House #37,restaurant,40.174908,44.513687,4.5,Kentron-S
+341,The Espresso #72,cafe,40.20717,44.510396,4.7,Arabkir
+356,Anteb #87,restaurant,40.210208,44.526126,4.8,Arabkir
+385,Pharm Express #26,pharmacy,40.208645,44.51728,3.6,Arabkir
+77,Coffeeshop Co #78,cafe,40.187053,44.522524,5.0,Center
+522,Stop Club #73,bar,40.167745,44.519304,4.3,Kentron-S
+288,Calumet #19,bar,40.17526,44.510938,4.0,Center
+137,Anteb #48,restaurant,40.194925,44.50832,3.8,Center
+428,Aperto #69,cafe,40.177223,44.516494,3.9,Kentron-S
+115,Sketch #26,cafe,40.181074,44.533209,4.8,Center
+707,Caucasus #78,restaurant,40.195113,44.578576,4.9,Nor-Nork
+624,Sketch #85,cafe,40.168181,44.474061,4.0,Malatia
+225,Aregak #46,restaurant,40.185408,44.509068,4.2,Center
+134,Caucasus #45,restaurant,40.170361,44.527225,3.8,Center
+610,Pharm Express #71,pharmacy,40.147095,44.536641,4.2,Erebuni
+721,Aregak #2,restaurant,40.206509,44.556873,4.8,Nor-Nork
+525,Stop Club #76,bar,40.16472,44.512641,3.9,Kentron-S
+463,Sherep #14,restaurant,40.176964,44.504389,4.7,Kentron-S
+195,Dolmama #16,restaurant,40.184037,44.504693,5.0,Center
+453,Lumen #4,cafe,40.164053,44.495077,3.5,Kentron-S
+189,Tavern #10,restaurant,40.173946,44.51436,3.6,Center
+728,Health+ #9,pharmacy,40.200933,44.578016,3.7,Nor-Nork
+198,Caucasus #19,restaurant,40.177335,44.512438,4.2,Center
+278,Liberty Bar #9,bar,40.17791,44.51602,3.7,Center
+328,Kupatak #59,cafe,40.20042,44.526322,4.4,Arabkir
+46,Aperto #47,cafe,40.189963,44.522183,4.1,Center
+135,Wine Republic #46,restaurant,40.187433,44.506057,3.9,Center
+679,Kupatak #50,cafe,40.18972,44.559977,4.4,Nor-Nork
+458,The Espresso #9,cafe,40.166346,44.517202,3.8,Kentron-S
+250,Alfa-Farm #71,pharmacy,40.178573,44.519095,3.2,Center
+241,Med Pharm #62,pharmacy,40.180921,44.510603,4.2,Center
+203,Dolmama #24,restaurant,40.178137,44.529384,4.8,Center
+401,Pharm Express #42,pharmacy,40.21208,44.531612,3.1,Arabkir
+157,Karas #68,restaurant,40.180547,44.52529,3.9,Center
+663,Med Pharm #34,pharmacy,40.157963,44.453997,3.2,Malatia
+432,Aperto #73,cafe,40.165954,44.509066,3.6,Kentron-S
+644,Wine Republic #15,restaurant,40.165327,44.461808,4.4,Malatia
+41,Lumen #42,cafe,40.18177,44.522026,3.8,Center
+149,Wine Republic #60,restaurant,40.165453,44.525177,4.2,Center
+534,Liberty Bar #85,bar,40.17289,44.521863,4.6,Kentron-S
+87,Achajour #88,cafe,40.183616,44.510069,4.7,Center
+105,Sketch #16,cafe,40.174168,44.509085,4.5,Center
+13,Lumen #14,cafe,40.183129,44.524715,3.9,Center
+506,Tavern #57,restaurant,40.171003,44.510214,4.9,Kentron-S
+656,Caucasus #27,restaurant,40.15741,44.468604,4.5,Malatia
+245,Pharm Express #66,pharmacy,40.185045,44.515126,3.5,Center
+307,Lumen #38,cafe,40.205388,44.515305,3.9,Arabkir
+320,Coffeeshop Co #51,cafe,40.20452,44.537746,3.8,Arabkir
+698,Achajour #69,cafe,40.202929,44.575636,4.7,Nor-Nork
+697,Achajour #68,cafe,40.190946,44.572632,4.3,Nor-Nork
+150,Gata House #61,restaurant,40.179882,44.512328,4.7,Center
+44,Sip #45,cafe,40.188098,44.524185,4.9,Center
+218,Gata House #39,restaurant,40.176728,44.50472,4.7,Center
+554,Gata House #15,restaurant,40.215734,44.463268,4.1,Davtashen
+670,Alfa-Farm #41,pharmacy,40.156922,44.467937,3.3,Malatia
+27,Achajour #28,cafe,40.18153,44.508096,4.0,Center
+78,Kupatak #79,cafe,40.176599,44.512061,4.1,Center
+701,Kupatak #72,cafe,40.18921,44.565184,4.3,Nor-Nork
+430,Green Bean #71,cafe,40.172526,44.50696,4.6,Kentron-S
+709,Aregak #80,restaurant,40.200047,44.56727,3.8,Nor-Nork
+292,Republic #23,bar,40.189068,44.522538,4.8,Center
+201,Dolmama #22,restaurant,40.184049,44.523648,4.0,Center
+25,The Espresso #26,cafe,40.175017,44.515593,3.9,Center
+553,Tavern #14,restaurant,40.216952,44.480755,5.0,Davtashen
+121,Sherep #32,restaurant,40.181488,44.523431,4.2,Center
+706,Wine Republic #77,restaurant,40.205786,44.561407,3.6,Nor-Nork
+572,Sketch #33,cafe,40.142675,44.5556,5.0,Erebuni
+338,Coffeeshop Co #69,cafe,40.203438,44.524541,4.4,Arabkir
+561,Caucasus #22,restaurant,40.222374,44.475276,4.8,Davtashen
+419,Tap #60,bar,40.217748,44.515407,4.7,Arabkir
+194,Karas #15,restaurant,40.1858,44.510342,3.8,Center
+210,Sherep #31,restaurant,40.186068,44.507717,4.8,Center
+571,Caffeine Lab #32,cafe,40.140461,44.52984,4.4,Erebuni
+543,Caffeine Lab #4,cafe,40.214377,44.472021,4.5,Davtashen
+54,Coffeeshop Co #55,cafe,40.185786,44.506863,4.9,Center
+160,Tavern #71,restaurant,40.177859,44.508637,4.2,Center
+444,Sip #85,cafe,40.163026,44.508236,4.0,Kentron-S
+168,Sherep #79,restaurant,40.17996,44.518554,4.0,Center
+441,Sip #82,cafe,40.164694,44.515342,3.7,Kentron-S
+31,The Espresso #32,cafe,40.173427,44.524048,3.7,Center
+494,Aregak #45,restaurant,40.176511,44.508309,4.1,Kentron-S
+346,Gata House #77,restaurant,40.197035,44.538196,4.6,Arabkir
+95,Caffeine Lab #6,cafe,40.168408,44.502559,4.0,Center
+735,Calumet #16,bar,40.191842,44.563484,4.3,Nor-Nork
+164,Lavash #75,restaurant,40.180914,44.526691,3.7,Center
+544,Sketch #5,cafe,40.222299,44.460341,4.9,Davtashen
+174,Karas #85,restaurant,40.186449,44.516497,3.7,Center
+350,Aregak #81,restaurant,40.204913,44.508552,4.2,Arabkir
+640,Lavash #11,restaurant,40.168584,44.466446,3.7,Malatia
+107,Sip #18,cafe,40.179845,44.521013,4.5,Center
+267,Beatles Pub #88,bar,40.173657,44.530605,5.0,Center
+668,City Pharm #39,pharmacy,40.166908,44.474076,3.3,Malatia
+621,Caffeine Lab #82,cafe,40.170896,44.454908,3.8,Malatia
+583,Coffeeshop Co #44,cafe,40.147653,44.534521,4.4,Erebuni
+34,Lumen #35,cafe,40.181582,44.527257,4.4,Center
+75,Kupatak #76,cafe,40.180951,44.523174,4.9,Center
+462,Dolmama #13,restaurant,40.16716,44.502891,4.2,Kentron-S
+166,Karas #77,restaurant,40.18022,44.499759,3.9,Center
+230,Aregak #51,restaurant,40.174362,44.522705,3.7,Center
+695,Coffeeshop Co #66,cafe,40.200591,44.567637,4.5,Nor-Nork
+599,Gata House #60,restaurant,40.141117,44.549737,3.9,Erebuni
+384,Wine Republic #25,restaurant,40.207949,44.508948,4.2,Arabkir
+359,Wine Republic #90,restaurant,40.207858,44.517685,4.9,Arabkir
+585,Aperto #46,cafe,40.151578,44.538613,4.2,Erebuni
+632,The Espresso #3,cafe,40.164441,44.475894,4.1,Malatia
+423,Aperto #64,cafe,40.166161,44.499852,3.7,Kentron-S
+170,Dolmama #81,restaurant,40.178882,44.505919,3.7,Center
+689,Aperto #60,cafe,40.189218,44.56495,4.1,Nor-Nork
+448,Achajour #89,cafe,40.175887,44.516418,4.1,Kentron-S
+395,Pharm Express #36,pharmacy,40.213124,44.517504,3.0,Arabkir
+49,Aperto #50,cafe,40.184673,44.526188,4.2,Center
+580,Sip #41,cafe,40.155811,44.543928,4.3,Erebuni
+110,Sketch #21,cafe,40.180174,44.51309,4.7,Center
+262,Tap #83,bar,40.178295,44.510853,4.9,Center
+358,Lavash #89,restaurant,40.194152,44.526886,4.9,Arabkir
+69,Coffeeshop Co #70,cafe,40.183194,44.511279,4.1,Center
+685,Caffeine Lab #56,cafe,40.202744,44.552871,4.4,Nor-Nork
+214,Aregak #35,restaurant,40.177244,44.521222,4.3,Center
+271,Stop Club #2,bar,40.184102,44.517356,4.8,Center
+11,Lumen #12,cafe,40.185286,44.513478,4.8,Center
+457,Sketch #8,cafe,40.162622,44.505641,5.0,Kentron-S
+343,Sketch #74,cafe,40.208626,44.531133,3.8,Arabkir
+90,Green Bean #1,cafe,40.18473,44.503715,4.8,Center
+171,Dolmama #82,restaurant,40.193766,44.51529,3.9,Center
+327,Sip #58,cafe,40.213943,44.507591,4.8,Arabkir
+355,Caucasus #86,restaurant,40.207961,44.522318,4.2,Arabkir
+243,Pharm Express #64,pharmacy,40.176865,44.508861,4.0,Center
+79,Coffeeshop Co #80,cafe,40.192817,44.508437,4.5,Center
+617,Aperto #78,cafe,40.159234,44.463158,3.8,Malatia
+144,Lavash #55,restaurant,40.186281,44.509493,4.1,Center
+718,Sherep #89,restaurant,40.183075,44.541297,4.8,Nor-Nork
+106,Coffeeshop Co #17,cafe,40.177545,44.505038,4.3,Center
+226,Sherep #47,restaurant,40.195069,44.522443,4.4,Center
+642,Anteb #13,restaurant,40.164791,44.469222,4.8,Malatia
+186,Sherep #7,restaurant,40.184336,44.516102,3.7,Center
+33,Achajour #34,cafe,40.182665,44.511921,4.7,Center
+400,City Pharm #41,pharmacy,40.20611,44.527419,3.9,Arabkir
+1,The Espresso #2,cafe,40.190523,44.523358,4.6,Center
+613,Calumet #74,bar,40.142183,44.54628,4.7,Erebuni
+130,Wine Republic #41,restaurant,40.188605,44.515836,4.0,Center
+301,Sip #32,cafe,40.209535,44.515654,3.7,Arabkir
+314,Aperto #45,cafe,40.202231,44.511907,4.0,Arabkir
+387,Pharm Express #28,pharmacy,40.204427,44.515823,3.1,Arabkir
+629,Coffeeshop Co #90,cafe,40.154157,44.467862,4.3,Malatia
+228,Gata House #49,restaurant,40.179731,44.508429,3.7,Center
+365,Aregak #6,restaurant,40.201564,44.519576,4.6,Arabkir
+575,Achajour #36,cafe,40.145209,44.547255,3.6,Erebuni
+178,Karas #89,restaurant,40.184287,44.51373,4.0,Center
+324,Achajour #55,cafe,40.21561,44.527355,4.2,Arabkir
+498,Lavash #49,restaurant,40.174961,44.494548,4.9,Kentron-S
+447,Caffeine Lab #88,cafe,40.167468,44.515199,4.7,Kentron-S
+161,Sherep #72,restaurant,40.183321,44.530843,4.5,Center
+139,Gata House #50,restaurant,40.191687,44.515801,3.7,Center
+330,Sketch #61,cafe,40.198985,44.520932,4.9,Arabkir
+309,Caffeine Lab #40,cafe,40.205839,44.52975,4.3,Arabkir
+344,Achajour #75,cafe,40.2159,44.520998,3.7,Arabkir
+103,Achajour #14,cafe,40.185339,44.510025,4.4,Center
+608,Pharm Express #69,pharmacy,40.139089,44.541305,4.2,Erebuni
+405,Aibolit #46,pharmacy,40.200927,44.520706,3.2,Arabkir
+382,Sherep #23,restaurant,40.212144,44.523191,4.5,Arabkir
+74,Achajour #75,cafe,40.182405,44.520128,4.5,Center
+373,Wine Republic #14,restaurant,40.199965,44.526422,4.2,Arabkir
+686,Lumen #57,cafe,40.198077,44.57264,4.2,Nor-Nork
+113,Aperto #24,cafe,40.182829,44.511123,4.8,Center
+635,Sherep #6,restaurant,40.163099,44.446342,3.9,Malatia
+737,Beatles Pub #18,bar,40.197738,44.546808,3.8,Nor-Nork
+151,Sherep #62,restaurant,40.180214,44.503926,4.9,Center
+734,Health+ #15,pharmacy,40.204829,44.564245,3.0,Nor-Nork
+60,Coffeeshop Co #61,cafe,40.192189,44.510316,3.6,Center
+331,Lumen #62,cafe,40.215297,44.511091,4.0,Arabkir
+181,Dolmama #2,restaurant,40.190999,44.520675,3.5,Center
+348,Wine Republic #79,restaurant,40.206977,44.525411,4.2,Arabkir
+133,Gata House #44,restaurant,40.168965,44.521581,4.8,Center
+206,Dolmama #27,restaurant,40.194055,44.513168,4.9,Center
+727,Alfa-Farm #8,pharmacy,40.204595,44.560348,3.2,Nor-Nork
+0,Green Bean #1,cafe,40.186604,44.515162,3.9,Center
+489,Caucasus #40,restaurant,40.167426,44.497024,3.5,Kentron-S
+539,Republic #90,bar,40.167109,44.514239,3.8,Kentron-S
+20,The Espresso #21,cafe,40.188566,44.525914,4.6,Center
+650,Gata House #21,restaurant,40.162494,44.466285,3.7,Malatia
+616,Green Bean #77,cafe,40.151318,44.461481,4.9,Malatia
+687,Kupatak #58,cafe,40.210644,44.574252,3.9,Nor-Nork
+651,Wine Republic #22,restaurant,40.159599,44.454304,4.7,Malatia
+92,Aperto #3,cafe,40.180717,44.516004,4.5,Center
+38,Achajour #39,cafe,40.181076,44.510986,4.5,Center
+502,Aregak #53,restaurant,40.158589,44.517008,4.3,Kentron-S
+179,Lavash #90,restaurant,40.194778,44.509383,3.6,Center
+316,Green Bean #47,cafe,40.214295,44.508125,4.6,Arabkir
+555,Lavash #16,restaurant,40.228432,44.48145,3.7,Davtashen
+504,Anteb #55,restaurant,40.178925,44.509246,3.8,Kentron-S
+192,Sherep #13,restaurant,40.18714,44.515053,4.6,Center
+576,Aperto #37,cafe,40.142233,44.520261,4.5,Erebuni
+145,Anteb #56,restaurant,40.176034,44.497398,4.4,Center
+577,Achajour #38,cafe,40.152135,44.542387,3.5,Erebuni
+581,Achajour #42,cafe,40.142257,44.542104,4.1,Erebuni
+360,Anteb #1,restaurant,40.19047,44.52076,3.9,Arabkir
+28,Achajour #29,cafe,40.173581,44.516906,4.9,Center
+605,Caucasus #66,restaurant,40.141061,44.528353,4.5,Erebuni
+680,The Espresso #51,cafe,40.193124,44.561215,4.0,Nor-Nork
+325,Lumen #56,cafe,40.2016,44.518119,4.0,Arabkir
+606,Med Pharm #67,pharmacy,40.143564,44.535877,3.0,Erebuni
+242,Aibolit #63,pharmacy,40.181533,44.519553,4.2,Center
+180,Lavash #1,restaurant,40.180466,44.521575,3.6,Center
+177,Sherep #88,restaurant,40.177876,44.517822,4.9,Center
+363,Dolmama #4,restaurant,40.208285,44.52612,4.6,Arabkir
+672,Stop Club #43,bar,40.163757,44.451519,4.6,Malatia
+589,Dolmama #50,restaurant,40.142433,44.538158,4.8,Erebuni
+666,Aibolit #37,pharmacy,40.151715,44.45344,4.1,Malatia
+57,Green Bean #58,cafe,40.175568,44.514597,3.8,Center
+546,The Espresso #7,cafe,40.213153,44.472467,4.9,Davtashen
+272,Republic #3,bar,40.185328,44.49193,3.9,Center
+246,Pharm Express #67,pharmacy,40.177319,44.530541,4.1,Center
+253,Med Pharm #74,pharmacy,40.163918,44.50877,3.7,Center
+102,Aperto #13,cafe,40.183329,44.521967,4.5,Center
+163,Dolmama #74,restaurant,40.1808,44.503737,4.0,Center
+238,Caucasus #59,restaurant,40.183648,44.516747,4.1,Center
+598,Dolmama #59,restaurant,40.146073,44.530242,4.1,Erebuni
+366,Anteb #7,restaurant,40.206288,44.510837,3.9,Arabkir
+542,Sip #3,cafe,40.221109,44.48358,3.8,Davtashen
+483,Tavern #34,restaurant,40.166168,44.504012,4.6,Kentron-S
+59,The Espresso #60,cafe,40.168607,44.50452,4.3,Center
+287,12 Tables #18,bar,40.17779,44.518327,3.7,Center
+717,Caucasus #88,restaurant,40.193014,44.557993,3.5,Nor-Nork
+224,Caucasus #45,restaurant,40.183151,44.510568,4.1,Center
+611,City Pharm #72,pharmacy,40.14019,44.544505,4.2,Erebuni
+326,Achajour #57,cafe,40.196238,44.524576,3.6,Arabkir
+26,The Espresso #27,cafe,40.184277,44.51431,4.6,Center
+184,Lavash #5,restaurant,40.181562,44.510963,4.4,Center
+276,Tap #7,bar,40.185023,44.5106,4.5,Center
+397,Med Pharm #38,pharmacy,40.198785,44.519476,3.6,Arabkir
+329,Caffeine Lab #60,cafe,40.207784,44.511762,4.5,Arabkir
+514,Alfa-Farm #65,pharmacy,40.173367,44.52304,4.3,Kentron-S
+579,Aperto #40,cafe,40.134582,44.539538,4.3,Erebuni
+352,Dolmama #83,restaurant,40.213022,44.517377,5.0,Arabkir
+496,Anteb #47,restaurant,40.167124,44.503755,4.4,Kentron-S
+557,Lavash #18,restaurant,40.231079,44.467522,4.2,Davtashen
+491,Sherep #42,restaurant,40.164507,44.495158,4.9,Kentron-S
+367,Dolmama #8,restaurant,40.192039,44.530354,4.7,Arabkir
+716,Caucasus #87,restaurant,40.17889,44.578378,3.8,Nor-Nork
+19,Sketch #20,cafe,40.170442,44.514067,4.8,Center
+556,Wine Republic #17,restaurant,40.217911,44.479685,4.0,Davtashen
+645,Lavash #16,restaurant,40.16929,44.478419,3.8,Malatia
+255,Republic #76,bar,40.175764,44.515242,4.4,Center
+538,Liberty Bar #89,bar,40.162067,44.509155,3.6,Kentron-S
+658,Sherep #29,restaurant,40.158279,44.467162,4.0,Malatia
+204,Lavash #25,restaurant,40.193146,44.511292,4.4,Center
+429,Coffeeshop Co #70,cafe,40.166177,44.511087,4.9,Kentron-S
+140,Dolmama #51,restaurant,40.186521,44.520322,4.9,Center
+392,Pharm Express #33,pharmacy,40.196133,44.507404,3.5,Arabkir
+708,Aregak #79,restaurant,40.203555,44.570965,4.1,Nor-Nork
+89,Sketch #90,cafe,40.181571,44.518272,4.7,Center
+62,Sip #63,cafe,40.190536,44.503712,3.9,Center
+490,Sherep #41,restaurant,40.173754,44.51156,3.7,Kentron-S
+563,Karas #24,restaurant,40.218312,44.4752,4.9,Davtashen
+421,Achajour #62,cafe,40.164059,44.502356,3.9,Kentron-S
+510,Health+ #61,pharmacy,40.176699,44.496865,3.2,Kentron-S
+302,Aperto #33,cafe,40.217809,44.530438,4.2,Arabkir
+662,Health+ #33,pharmacy,40.163254,44.469515,3.7,Malatia
+251,Health+ #72,pharmacy,40.192619,44.510751,4.3,Center
+631,Kupatak #2,cafe,40.159426,44.46386,4.8,Malatia
+634,Sip #5,cafe,40.157341,44.469244,3.8,Malatia
+628,Aperto #89,cafe,40.155943,44.471472,3.7,Malatia
+35,The Espresso #36,cafe,40.16775,44.515531,3.6,Center
+152,Dolmama #63,restaurant,40.18617,44.510259,4.7,Center
+456,Coffeeshop Co #7,cafe,40.168722,44.504921,3.6,Kentron-S
+286,Calumet #17,bar,40.187854,44.498104,3.6,Center
+281,The Loft #12,bar,40.174176,44.507732,3.9,Center
+191,Karas #12,restaurant,40.193753,44.509927,4.8,Center
+219,Karas #40,restaurant,40.187921,44.516146,4.3,Center
+362,Dolmama #3,restaurant,40.207664,44.525089,3.9,Arabkir
+176,Lavash #87,restaurant,40.177548,44.510435,4.7,Center
+436,Caffeine Lab #77,cafe,40.168577,44.505112,4.6,Kentron-S
+699,Caffeine Lab #70,cafe,40.198487,44.569183,4.8,Nor-Nork
+391,Natali Pharm #32,pharmacy,40.19957,44.52408,4.0,Arabkir
+30,Sip #31,cafe,40.180053,44.517946,4.5,Center
+508,Wine Republic #59,restaurant,40.175524,44.502056,4.2,Kentron-S
+404,Pharm Express #45,pharmacy,40.206711,44.51797,4.1,Arabkir
+443,Coffeeshop Co #84,cafe,40.17064,44.502917,4.3,Kentron-S
+587,Dolmama #48,restaurant,40.140148,44.535167,4.4,Erebuni
+172,Dolmama #83,restaurant,40.18408,44.523213,3.6,Center
+51,Kupatak #52,cafe,40.185929,44.506334,4.3,Center
+472,Dolmama #23,restaurant,40.170597,44.508708,3.7,Kentron-S
+43,Sketch #44,cafe,40.183978,44.51586,3.9,Center
+125,Karas #36,restaurant,40.188035,44.497948,4.1,Center
+339,Aperto #70,cafe,40.204076,44.524044,4.5,Arabkir
+94,Achajour #5,cafe,40.193255,44.510982,3.8,Center
+131,Karas #42,restaurant,40.183596,44.508684,4.9,Center
+454,Aperto #5,cafe,40.15882,44.514175,4.1,Kentron-S
+661,Alfa-Farm #32,pharmacy,40.164724,44.450517,3.7,Malatia
+202,Aregak #23,restaurant,40.181365,44.506406,3.8,Center
+66,Kupatak #67,cafe,40.187772,44.509762,4.9,Center
+22,Sketch #23,cafe,40.189552,44.513812,3.7,Center
+76,Kupatak #77,cafe,40.169383,44.521919,3.9,Center
+265,Liberty Bar #86,bar,40.178699,44.532353,5.0,Center
+600,Karas #61,restaurant,40.146194,44.528767,3.6,Erebuni
+596,Dolmama #57,restaurant,40.146228,44.520551,3.5,Erebuni

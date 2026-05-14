@@ -1,0 +1,13 @@
+pandas
+numpy
+geopandas
+osmnx
+folium
+streamlit
+streamlit-folium
+openai
+scikit-learn
+geopy
+shapely
+jupyter
+python-dotenv
