@@ -16,9 +16,13 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from tools.coverage import find_underserved_areas
-from tools.ranking import rank_by_distance, rank_by_score
-from tools.search import search_places
+from .tools import (
+    _tool_coverage, 
+    _tool_distance,
+    _tool_filtering,
+    _tool_rank,
+    _tool_search
+)
 
 from .prompts import SYSTEM_PROMPT
 from .tools_schema import TOOLS
@@ -26,37 +30,13 @@ from .tools_schema import TOOLS
 load_dotenv()
 
 
-def _tool_search(args: dict[str, Any]) -> list[dict]:
-    near = None
-    if "near_lat" in args and "near_lon" in args:
-        near = (float(args["near_lat"]), float(args["near_lon"]))
-    return search_places(
-        category=args.get("category"),
-        near=near,
-        max_distance_km=args.get("max_distance_km"),
-        limit=int(args.get("limit", 10)),
-    )
-
-
-def _tool_rank(args: dict[str, Any]) -> list[dict]:
-    places = args.get("places") or []
-    strategy = args.get("strategy", "score")
-    if strategy == "distance":
-        return rank_by_distance(places)
-    return rank_by_score(places)
-
-
-def _tool_coverage(args: dict[str, Any]) -> list[dict]:
-    return find_underserved_areas(
-        category=args.get("category", "pharmacy"),
-        top_k=int(args.get("top_k", 10)),
-    )
-
 
 TOOL_IMPL = {
     "search_places": _tool_search,
     "rank_places": _tool_rank,
     "find_underserved_areas": _tool_coverage,
+    "filter_places": _tool_filtering,
+    "compute_distance": _tool_distance,
 }
 
 
@@ -101,7 +81,7 @@ def _llm_client_and_model():
 
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+    model = f"gpt://{os.getenv("YANDEX_CLOUD_FOLDER")}/{os.getenv("YANDEX_CLOUD_MODEL", "gpt-4o-mini")}"
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
@@ -119,6 +99,7 @@ def run(query: str) -> str:
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": query},
     ]
+
     first = client.chat.completions.create(model=model, messages=messages, tools=TOOLS)
     msg = first.choices[0].message
     messages.append(msg.model_dump(exclude_none=True))

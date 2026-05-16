@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import Iterable
+from lib.data_types import Place
 
 import folium
 from folium.plugins import HeatMap
@@ -14,21 +15,21 @@ def _center(points: list[tuple[float, float]]) -> tuple[float, float]:
     )
 
 
-def places_map(places: Iterable[dict], zoom_start: int = 13) -> folium.Map:
+def places_map(places: Iterable[Place], zoom_start: int = 13) -> folium.Map:
     places = list(places)
     if not places:
         return folium.Map(location=(0, 0), zoom_start=2)
 
-    center = _center([(p["lat"], p["lon"]) for p in places])
+    center = _center([(p.lat, p.lon) for p in places])
     m = folium.Map(location=center, zoom_start=zoom_start)
     for p in places:
-        popup = f"<b>{p.get('name', 'unknown')}</b><br>{p.get('amenity', '?')}"
+        popup = f"<b>{p.name}</b><br>{p.amenity}"
         if "rating" in p:
-            popup += f"<br>rating: {p['rating']}"
+            popup += f"<br>rating: {p.rating}"
         if "score" in p:
-            popup += f"<br>score: {p['score']}"
+            popup += f"<br>score: {p.score}"
         folium.CircleMarker(
-            location=(p["lat"], p["lon"]),
+            location=(p.lat, p.lon),
             radius=5,
             popup=popup,
             color="#1f77b4",

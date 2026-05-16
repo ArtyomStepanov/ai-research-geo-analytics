@@ -80,9 +80,9 @@ def search_places(
     for row in df.head(limit).itertuples(index=False):
         result.append(Place(
                 name=None if (isinstance(row.name, float) and math.isnan(row.name)) else row.name,
-                amenity=row.amenity,
+                amenity=None if (isinstance(row.amenity, float) and math.isnan(row.amenity)) else row.amenity,
                 distance_km=row.distance_km,
-                rating=row.rating,
+                rating=getattr(row, "rating", 0.0),
                 lat=row.lat,
                 lon=row.lon
         ))
