@@ -8,4 +8,3 @@ class Place(BaseModel):
     score: float | None = None
     lat: float
     lon: float
-
