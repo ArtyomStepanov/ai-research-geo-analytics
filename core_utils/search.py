@@ -10,6 +10,7 @@ from typing import Optional
 
 from lib.data_types import Place
 import pandas as pd
+import math
 
 from .geo_utils import haversine_km
 
@@ -73,16 +74,18 @@ def search_places(
             df = df[df["distance_km"] <= max_distance_km]
         df = df.nsmallest(limit, "distance_km")
 
+    df = df.assign(distance_km=None)
     result: list[Place] = []
 
     for row in df.head(limit).itertuples(index=False):
         result.append(Place(
-                name=row["name"],
-                amenity=row["ame"],
-                distance_km=row["distance_km"],
-                lat=row["lat"],
-                lon=row["lon"]
-            ))
+                name=None if (isinstance(row.name, float) and math.isnan(row.name)) else row.name,
+                amenity=row.amenity,
+                distance_km=row.distance_km,
+                rating=row.rating,
+                lat=row.lat,
+                lon=row.lon
+        ))
 
     return result
 

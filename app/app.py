@@ -16,11 +16,12 @@ for p in (str(ROOT), str(HERE)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
+from lib.data_types import Place
 from agent.agent import run as run_agent  # noqa: E402
 from map_visualization import places_map, underserved_map  # noqa: E402
-from tools.coverage import find_underserved_areas  # noqa: E402
-from tools.ranking import rank_by_distance, rank_by_score  # noqa: E402
-from tools.search import _load_places, search_places  # noqa: E402
+from core_utils.coverage import find_underserved_areas  # noqa: E402
+from core_utils.ranking import rank_by_distance, rank_by_score  # noqa: E402
+from core_utils.search import _load_places, search_places  # noqa: E402
 
 st.set_page_config(page_title="Geo AI Assistant", layout="wide")
 
@@ -87,7 +88,7 @@ elif go and query:
     with st.spinner("Thinking..."):
         answer = run_agent(query)
 
-    places: list[dict] = []
+    places: list[Place] = []
     for cat in (categories or [None]):
         places.extend(search_places(category=cat, limit=80))
     if ranking_strategy.startswith("score"):
