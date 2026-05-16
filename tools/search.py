@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
-from lib.data_types.place import Place
+from lib.data_types import Place
 import pandas as pd
 
 from .geo_utils import haversine_km
@@ -71,7 +71,7 @@ def search_places(
         )
         if max_distance_km is not None:
             df = df[df["distance_km"] <= max_distance_km]
-        df = df.sort_values("distance_km")
+        df = df.nsmallest(limit, "distance_km")
 
     result: list[Place] = []
 
