@@ -16,13 +16,9 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from .tools import (
-    _tool_coverage, 
-    _tool_distance,
-    _tool_filtering,
-    _tool_rank,
-    _tool_search
-)
+from core_utils.coverage import find_underserved_areas
+from core_utils.ranking import rank_by_distance, rank_by_score
+from core_utils.search import search_places
 
 from .prompts import SYSTEM_PROMPT
 from .tools_schema import TOOLS

@@ -10,9 +10,8 @@ from typing import Optional
 
 from lib.data_types import Place
 import pandas as pd
-import math
 
-from .geo_utils import haversine_km
+from .geo_utils import haversine_km_array
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -66,28 +65,20 @@ def search_places(
     if near is not None and {"lat", "lon"}.issubset(df.columns):
         lat0, lon0 = near
         df = df.assign(
-            distance_km=df.apply(
-                lambda r: haversine_km(lat0, lon0, r["lat"], r["lon"]), axis=1
+            distance_km=haversine_km_array(
+                lat0, lon0, df["lat"].to_numpy(), df["lon"].to_numpy()
             )
         )
         if max_distance_km is not None:
             df = df[df["distance_km"] <= max_distance_km]
         df = df.nsmallest(limit, "distance_km")
+    else:
+        df = df.assign(distance_km=None)
 
-    df = df.assign(distance_km=None)
-    result: list[Place] = []
+    slice_df = df.head(limit).copy()
+    slice_df = slice_df.astype(object).where(pd.notna(slice_df), None)
 
-    for row in df.head(limit).itertuples(index=False):
-        result.append(Place(
-                name=None if (isinstance(row.name, float) and math.isnan(row.name)) else row.name,
-                amenity=None if (isinstance(row.amenity, float) and math.isnan(row.amenity)) else row.amenity,
-                distance_km=row.distance_km,
-                rating=getattr(row, "rating", 0.0),
-                lat=row.lat,
-                lon=row.lon
-        ))
-
-    return result
+    return [Place(**rec) for rec in slice_df.to_dict(orient="records")]
 
 
 def nearest_places(

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from math import asin, cos, radians, sin, sqrt
 
+import numpy as np
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance between two points in kilometers."""
@@ -12,6 +13,19 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     dlon = lon2 - lon1
     a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
     return 2 * r * asin(sqrt(a))
+
+
+def haversine_km_array(lat0: float, lon0: float, lat: np.ndarray, lon: np.ndarray) -> np.ndarray:
+    """Vectorized great-circle distance from one anchor (lat0, lon0)
+    to arrays of points. Mirrors haversine_km but operates on numpy arrays.
+    """
+    r = 6371.0
+    lat0, lon0 = np.radians(lat0), np.radians(lon0)
+    lat, lon = np.radians(lat), np.radians(lon)
+    dlat = lat - lat0
+    dlon = lon - lon0
+    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat0) * np.cos(lat) * np.sin(dlon / 2.0) ** 2
+    return 2.0 * r * np.arcsin(np.sqrt(a))
 
 
 def compute_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
