@@ -24,6 +24,8 @@ def _load_places(csv_path: Optional[str] = None) -> pd.DataFrame:
         2. `data/processed/*amenities*.csv`,
         3. `data/raw/*amenities*.csv`,
         4. `data/sample_places.csv` — встроенный safety-net датасет.
+
+    TODO: кеширование (?)
     """
     if csv_path is not None:
         return pd.read_csv(csv_path)

@@ -54,7 +54,8 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
         for p in points
     ]
 
-    if kwargs.get("legend", True):
+    # TODO: debug
+    if kwargs.get("legend", False):
         title = kwargs.get("legend_title", "Интенсивность")
         low = kwargs.get("legend_low", "низкая")
         high = kwargs.get("legend_high", "высокая")
@@ -76,3 +77,8 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
 
     HeatMap(weighted, radius=kwargs.get("radius", 12)).add_to(m)
     return m
+
+
+def isochrone(point, minutes: float):
+    """ TODO: do """
+    import osmnx as ox
