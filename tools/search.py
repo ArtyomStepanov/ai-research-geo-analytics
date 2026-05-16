@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
+from lib.data_types import Place
 import pandas as pd
 
 from .geo_utils import haversine_km
@@ -47,7 +48,7 @@ def search_places(
     max_distance_km: Optional[float] = None,
     limit: int = 20,
     csv_path: Optional[str] = None,
-) -> list[dict]:
+) -> list[Place]:
     """Return amenities matching the filters, optionally sorted by distance.
 
     Args:
@@ -70,15 +71,26 @@ def search_places(
         )
         if max_distance_km is not None:
             df = df[df["distance_km"] <= max_distance_km]
-        df = df.sort_values("distance_km")
+        df = df.nsmallest(limit, "distance_km")
 
-    return df.head(limit).to_dict(orient="records")
+    result: list[Place] = []
+
+    for row in df.head(limit).itertuples(index=False):
+        result.append(Place(
+                name=row["name"],
+                amenity=row["ame"],
+                distance_km=row["distance_km"],
+                lat=row["lat"],
+                lon=row["lon"]
+            ))
+
+    return result
 
 
 def nearest_places(
     point: tuple[float, float],
     category: Optional[str] = None,
     limit: int = 5,
-) -> list[dict]:
+) -> list[Place]:
     """Return the N nearest places to `point`."""
     return search_places(category=category, near=point, limit=limit)
