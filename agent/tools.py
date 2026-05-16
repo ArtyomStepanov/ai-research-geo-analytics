@@ -1,0 +1,46 @@
+from tools.coverage import find_underserved_areas
+from tools.ranking import rank_by_distance, rank_by_score
+from tools.search import search_places
+from tools.filtering import filter_by_category, filter_by_rating
+from tools.geo_utils import compute_distance
+
+from typing import Any
+
+def _tool_search(args: dict[str, Any]) -> list[dict]:
+    near = None
+    if "near_lat" in args and "near_lon" in args:
+        near = (float(args["near_lat"]), float(args["near_lon"]))
+    return search_places(
+        category=args.get("category"),
+        near=near,
+        max_distance_km=args.get("max_distance_km"),
+        limit=int(args.get("limit", 10)),
+    )
+
+
+def _tool_rank(args: dict[str, Any]) -> list[dict]:
+    places = args.get("places") or []
+    strategy = args.get("strategy", "score")
+    if strategy == "distance":
+        return rank_by_distance(places)
+    return rank_by_score(places)
+
+
+def _tool_coverage(args: dict[str, Any]) -> list[dict]:
+    return find_underserved_areas(
+        category=args.get("category", "pharmacy"),
+        top_k=int(args.get("top_k", 10)),
+    )
+
+def _tool_filtering(args: dict[str, Any]) -> list[dict]:
+    places = args.get("places") or []
+    strategy = args.get("strategy", "rating")
+    if strategy == "category":
+        category = args.get("category")
+        return filter_by_category(places, category)
+    min_rating = args.get("min_rating", 0)
+    return filter_by_rating(places, min_rating)
+
+def _tool_distance(args: dict[str, Any]) -> float:
+    p1, p2 = args.get("p1"), args.get("p2")
+    return compute_distance(p1, p2)

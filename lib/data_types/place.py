@@ -6,3 +6,4 @@ class Place(BaseModel):
     distance_km: float
     lat: float
     lon: float
+
