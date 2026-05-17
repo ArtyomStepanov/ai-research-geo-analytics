@@ -44,7 +44,7 @@ def _load_places(csv_path: Optional[str] = None) -> pd.DataFrame:
 
 
 def search_places(
-    category: Optional[str] = None,
+    category: Optional[list[str]] = None,
     near: Optional[tuple[float, float]] = None,
     max_distance_km: Optional[float] = None,
     limit: int = 20,
@@ -53,7 +53,7 @@ def search_places(
     """Return amenities matching the filters, optionally sorted by distance.
 
     Args:
-        category: e.g. "cafe", "pharmacy". None = any.
+        list of categories: e.g. "cafe", "pharmacy". None = any.
         near: (lat, lon) anchor point for distance filtering/sorting.
         max_distance_km: keep only places within this radius from `near`.
         limit: max number of results.
@@ -61,7 +61,7 @@ def search_places(
     df = _load_places(csv_path)
 
     if category is not None and "amenity" in df.columns:
-        df = df[df["amenity"] == category]
+        df = df[df["amenity"].isin(category)]
 
     if near is not None and {"lat", "lon"}.issubset(df.columns):
         lat0, lon0 = near
@@ -84,7 +84,7 @@ def search_places(
 
 def nearest_places(
     point: tuple[float, float],
-    category: Optional[str] = None,
+    category: Optional[list[str]] = None,
     limit: int = 5,
 ) -> list[Place]:
     """Return the N nearest places to `point`."""
