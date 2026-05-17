@@ -13,3 +13,4 @@ jupyter
 python-dotenv
 pydantic
 networkx
+rapidfuzz
