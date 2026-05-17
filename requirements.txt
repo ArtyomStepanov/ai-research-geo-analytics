@@ -12,3 +12,4 @@ shapely
 jupyter
 python-dotenv
 pydantic
+networkx
