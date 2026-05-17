@@ -1,6 +1,6 @@
 from core_utils.coverage import find_underserved_areas
 from core_utils.ranking import rank_by_distance, rank_by_score
-from core_utils.search import nearest_places, search_by_name
+from core_utils.search import nearest_places, search_by_name, search_places
 from core_utils.filtering import filter_by_category, filter_by_rating
 from core_utils.geo_utils import compute_distance
 from lib.data_types import Place
@@ -13,9 +13,10 @@ def _tool_search_places(args: dict[str, Any]) -> list[Place]:
     near = None
     if "near_lat" in args and "near_lon" in args:
         near = (float(args["near_lat"]), float(args["near_lon"]))
-    return nearest_places(
+    return search_places(
         category=ast.literal_eval(args.get("category")),
         point=near,
+        max_distance_km=args.get("max_distance_km"),
         limit=int(args.get("limit", 10)),
     )
 
