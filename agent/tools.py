@@ -22,6 +22,11 @@ def _tool_search(args: dict[str, Any]) -> list[Place]:
 def _tool_rank(args: dict[str, Any]) -> list[Place]:
     places = args.get("places") or []
     strategy = args.get("strategy", "score")
+
+    # Конвертируем словари в объекты Place, если нужно
+    if places and isinstance(places[0], dict):
+        places = [Place(**p) for p in places]
+
     if strategy == "distance":
         return rank_by_distance(places)
     return rank_by_score(places)
@@ -37,6 +42,11 @@ def _tool_coverage(args: dict[str, Any]) -> list[dict]:
 def _tool_filtering(args: dict[str, Any]) -> list[Place]:
     places = args.get("places") or []
     strategy = args.get("strategy", "rating")
+
+    # Конвертируем словари в объекты Place, если нужно
+    if places and isinstance(places[0], dict):
+        places = [Place(**p) for p in places]
+
     if strategy == "category":
         category = args.get("category")
         return filter_by_category(places, category)
