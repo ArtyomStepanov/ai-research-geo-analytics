@@ -4,6 +4,7 @@ from core_utils.search import search_places
 from core_utils.filtering import filter_by_category, filter_by_rating
 from core_utils.geo_utils import compute_distance
 from lib.data_types import Place
+import ast
 
 from typing import Any
 
@@ -12,7 +13,7 @@ def _tool_search(args: dict[str, Any]) -> list[Place]:
     if "near_lat" in args and "near_lon" in args:
         near = (float(args["near_lat"]), float(args["near_lon"]))
     return search_places(
-        category=args.get("category"),
+        category=ast.literal_eval(args.get("category")),
         near=near,
         max_distance_km=args.get("max_distance_km"),
         limit=int(args.get("limit", 10)),
