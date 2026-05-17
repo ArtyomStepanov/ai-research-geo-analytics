@@ -18,6 +18,10 @@ from dotenv import load_dotenv
 from core_utils.coverage import find_underserved_areas
 from core_utils.search import search_places
 
+from typing import Optional
+
+from .memory import ConversationMemory
+
 from .tools import (
     _tool_coverage, 
     _tool_distance,
@@ -168,9 +172,7 @@ def run(query: str, memory: Optional["ConversationMemory"] = None) -> str:
     )
     return final.choices[0].message.content or ""
 
-def main() -> None:
-    from .memory import ConversationMemory
-    
+def main() -> None:    
     # Создаём память на всю сессию (сохраняется между запросами в рамках одного запуска)
     memory = ConversationMemory(SYSTEM_PROMPT)
 
