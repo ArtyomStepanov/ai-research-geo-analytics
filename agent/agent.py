@@ -16,6 +16,9 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from core_utils.coverage import find_underserved_areas
+from core_utils.search import search_places
+
 from .tools import (
     _tool_coverage, 
     _tool_distance,
@@ -28,7 +31,6 @@ from .prompts import SYSTEM_PROMPT
 from .tools_schema import TOOLS
 
 load_dotenv()
-
 
 
 TOOL_IMPL = {

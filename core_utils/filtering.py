@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 from typing import Iterable
+from lib.data_types import Place
 
 
-def filter_by_category(places: Iterable[dict], category: str) -> list[dict]:
-    return [p for p in places if p.get("amenity") == category]
+def filter_by_category(places: Iterable[Place], category: str) -> list[Place]:
+    return [p for p in places if p.amenity == category]
 
 
-def filter_by_rating(places: Iterable[dict], min_rating: float) -> list[dict]:
+def filter_by_rating(places: Iterable[Place], min_rating: float) -> list[Place]:
     """TODO: рейтингов в OSM нет — выбрать источник (Yelp, Google, синтетика)."""
-    return [p for p in places if p.get("rating", 0) >= min_rating]
+    return [p for p in places if p.rating is not None and p.rating >= min_rating]
