@@ -9,6 +9,7 @@ import osmnx as ox
 import networkx as nx
 import geopandas as gpd
 from shapely.geometry import Point
+from typing import Literal
 
 ox.settings.use_cache = True
 
@@ -86,31 +87,99 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
     return m
 
 
-DEFAULT_SPEEDS = {"walk": 4.75, "drive": 40, "bike": 10} # TODO: уточнить
+Mode = Literal["walk", "drive", "bike"]
+DEFAULT_SPEEDS: dict[str, float] = {"walk": 4.75, "bike": 10.0}
 
-def isochrone(point: tuple[float, float],
-              minutes: float = 30.0,
-              mode: str = "walk"
-) -> "shapely.Polygon":
-    """Зона доступности из point за minutes на режиме mode ('walk'|'drive'|'bike')."""
-    speed = DEFAULT_SPEEDS[mode]
-    # 1. запас по dist: путь за minutes на этой скорости + 30% буфер
-    dist_m = (speed * 1000 / 60) * minutes * 1.3
-    G = ox.graph_from_point(point, dist=dist_m, network_type=mode, simplify=True)
 
-    # 2. привязка точки к узлу — X=lon, Y=lat (ловушка!)
-    center = ox.nearest_nodes(G, X=point[1], Y=point[0])
+def _graph_for_points(
+    points: list[tuple[float, float]], mode: Mode
+) -> tuple[nx.MultiDiGraph, list[int]]:
+    """Скачать граф, покрывающий все точки + запас, и привязать точки к узлам.
 
-    # 3. вес-время в минутах (единицы согласованы с radius ниже)
-    mpm = speed * 1000 / 60
-    for u, v, k, data in G.edges(keys=True, data=True):
+    Возвращает (граф, список узлов-перекрёстков по одному на каждую точку
+    в том же порядке). Единый источник для isochrone и route_length.
+    """
+    if len(points) < 1:
+        raise ValueError("Нужна хотя бы одна точка")
+
+    lats = [p[0] for p in points]
+    lons = [p[1] for p in points]
+
+    center = (sum(lats) / len(lats), sum(lons) / len(lons))
+    span_km = haversine_km(min(lats), min(lons), max(lats), max(lons))
+    dist_m = max(span_km * 1000 / 2 * 1.3, 500.0)
+
+    G = ox.graph_from_point(
+        center, dist=dist_m, network_type=mode, simplify=True
+    )
+
+    nodes = [ox.nearest_nodes(G, X=lon, Y=lat) for lat, lon in points]
+    return G, nodes
+
+
+def _assign_time(G: nx.MultiDiGraph, mode: Mode) -> tuple[str, float]:
+    """Проставить рёбрам вес-время. Возвращает (имя_атрибута, множитель_бюджета).
+
+    Единицы согласованы локально:
+      drive       -> travel_time в СЕКУНДАХ, бюджет = minutes * 60
+      walk / bike -> time в МИНУТАХ,         бюджет = minutes * 1
+    """
+    if mode == "drive":
+        G = ox.add_edge_speeds(G)
+        G = ox.add_edge_travel_times(G)
+        return "travel_time", 60.0
+
+    mpm = DEFAULT_SPEEDS[mode] * 1000 / 60
+    for _, _, _, data in G.edges(keys=True, data=True):
         data["time"] = data["length"] / mpm
+    return "time", 1.0
 
-    # 4. подграф достижимости
-    sub = nx.ego_graph(G, center, radius=minutes, distance="time")
-    if sub.number_of_nodes() < 3:
-        raise ValueError("Недостаточно узлов для полигона — проверь dist/minutes")
 
-    # 5. узлы -> полигон (convex_hull: baseline, завышает зону)
-    pts = [Point(d["x"], d["y"]) for _, d in sub.nodes(data=True)]
-    return gpd.GeoSeries(pts).union_all().convex_hull
+def route_length(points: list[tuple[float, float]], mode: Mode = "walk") -> float:
+    """Длина маршрута P1->P2->...->Pn по дорогам (в том числе пешеходным), в метрах.
+
+    Точки проходятся строго в переданном порядке (не оптимизируется).
+    Бросает ValueError, если между соседними точками нет пути по сети
+    """
+    if len(points) < 2:
+        raise ValueError("Нужно минимум 2 точки для маршрута")
+
+    G, nodes = _graph_for_points(points, mode)
+
+    total_m = 0.0
+    for i in range(len(nodes) - 1):
+        u, v = nodes[i], nodes[i + 1]
+        try:
+            total_m += nx.shortest_path_length(G, u, v, weight="length")
+        except nx.NetworkXNoPath:
+            # ВАРИАНТ a: ошибка
+            raise ValueError(
+                f"Нет пути по сети между точкой {i+1} и {i+2} "
+                f"({points[i]} -> {points[i+1]}) в режиме {mode!r}"
+            )
+            # ВАРИАНТ b: прямая линия
+            # total_m += haversine_km(*points[i], *points[i+1]) * 1000
+    return total_m
+
+
+def isochrone(
+    points: list[tuple[float, float]], minutes: float, mode: Mode = "walk"
+) -> list[tuple[float, float]]:
+    """Какие из points[1:] достижимы за minutes по дорогам/путям от points[0].
+
+    points[0] — позиция пользователя (центр), points[1:] — кандидаты.
+    Возвращает подмножество points[1:], достижимое в режиме mode.
+    """
+    G, nodes = _graph_for_points(points, mode)
+    weight_attr, budget_mult = _assign_time(G, mode)
+
+    sub = nx.ego_graph(
+        G, nodes[0], radius=minutes * budget_mult, distance=weight_attr
+    )
+    reachable_nodes = set(sub.nodes())
+
+    return [
+        points[i]
+        for i in range(1, len(points))
+        if nodes[i] in reachable_nodes
+    ]
