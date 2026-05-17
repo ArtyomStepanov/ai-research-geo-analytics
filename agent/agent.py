@@ -90,7 +90,7 @@ def _llm_client_and_model():
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
-def run(query: str, memory: Optional["ConversationMemory"] = None) -> str:
+def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(SYSTEM_PROMPT)) -> str:
     """Run agent with memory and multi-step tool calling.
     
     Args:
