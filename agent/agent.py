@@ -27,7 +27,9 @@ from .tools import (
     _tool_distance,
     _tool_filtering,
     _tool_rank,
-    _tool_search
+    _tool_search_places,
+    _tool_nearest_places,
+    _tool_search_by_name
 )
 
 from .prompts import SYSTEM_PROMPT
@@ -37,7 +39,9 @@ load_dotenv()
 
 
 TOOL_IMPL = {
-    "search_places": _tool_search,
+    "nearest_places": _tool_nearest_places,
+    "search_by_name": _tool_search_by_name,
+    "search_places": _tool_search_places,
     "rank_places": _tool_rank,
     "find_underserved_areas": _tool_coverage,
     "filter_places": _tool_filtering,
@@ -83,7 +87,7 @@ def _llm_client_and_model():
         3. Любой другой OpenAI-совместимый endpoint (Together, Groq, ...).
     """
     from openai import OpenAI
-    print("DEBUG: Build client", flush=True)
+    #print("DEBUG: Build client", flush=True)
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
     model = model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
@@ -114,7 +118,7 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
     # Цикл tool calling: максимум 5 итераций, чтобы избежать бесконечного цикла
     max_iterations = 5
     for iteration in range(max_iterations):
-        print(f"[DEBUG] Iteration {iteration + 1}/{max_iterations}", flush=True)
+        #print(f"[DEBUG] Iteration {iteration + 1}/{max_iterations}", flush=True)
         
         # Получаем актуальную историю сообщений
         messages = memory.get_messages()
@@ -144,17 +148,17 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
                 result = impl(args)
             else:
                 result = {"error": f"unknown tool '{name}'"}
-                print(f"[WARN] Unknown tool: {name}", flush=True)
+                #print(f"[WARN] Unknown tool: {name}", flush=True)
             
             # Добавляем результат инструмента в память
             memory.add_tool_result(
                 call.id, 
                 json.dumps(result, ensure_ascii=False, default=str)
             )
-            print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
+            #print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
     
     # Если достигли лимита итераций — просим LLM сформулировать ответ на основе накопленного контекста
-    print("[WARN] Max iterations reached, forcing final answer", flush=True)
+    #print("[WARN] Max iterations reached, forcing final answer", flush=True)
     memory.add_assistant_message(
         "[System] Please provide a final answer based on the tools executed so far."
     )
@@ -170,7 +174,7 @@ def main() -> None:
 
     query = " ".join(sys.argv[1:])
 
-    print(f"[QUERY] {query}", flush=True)
+    #print(f"[QUERY] {query}", flush=True)
     print(run(query, memory=memory))
 
 
