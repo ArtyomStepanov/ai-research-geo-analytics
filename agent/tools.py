@@ -33,6 +33,7 @@ def _tool_coverage(args: dict[str, Any]) -> list[dict]:
         top_k=int(args.get("top_k", 10)),
     )
 
+
 def _tool_filtering(args: dict[str, Any]) -> list[Place]:
     places = args.get("places") or []
     strategy = args.get("strategy", "rating")
@@ -41,6 +42,7 @@ def _tool_filtering(args: dict[str, Any]) -> list[Place]:
         return filter_by_category(places, category)
     min_rating = args.get("min_rating", 0)
     return filter_by_rating(places, min_rating)
+
 
 def _tool_distance(args: dict[str, Any]) -> float:
     p1, p2 = args.get("p1"), args.get("p2")

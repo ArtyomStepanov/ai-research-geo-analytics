@@ -3,7 +3,14 @@ from __future__ import annotations
 
 from math import asin, cos, radians, sin, sqrt
 
+import shapely
 import numpy as np
+import osmnx as ox
+import networkx as nx
+import geopandas as gpd
+from shapely.geometry import Point
+
+ox.settings.use_cache = True
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance between two points in kilometers."""
@@ -79,6 +86,31 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
     return m
 
 
-def isochrone(point, minutes: float):
-    """ TODO: do """
-    import osmnx as ox
+DEFAULT_SPEEDS = {"walk": 4.75, "drive": 40, "bike": 10} # TODO: уточнить
+
+def isochrone(point: tuple[float, float],
+              minutes: float = 30.0,
+              mode: str = "walk"
+) -> "shapely.Polygon":
+    """Зона доступности из point за minutes на режиме mode ('walk'|'drive'|'bike')."""
+    speed = DEFAULT_SPEEDS[mode]
+    # 1. запас по dist: путь за minutes на этой скорости + 30% буфер
+    dist_m = (speed * 1000 / 60) * minutes * 1.3
+    G = ox.graph_from_point(point, dist=dist_m, network_type=mode, simplify=True)
+
+    # 2. привязка точки к узлу — X=lon, Y=lat (ловушка!)
+    center = ox.nearest_nodes(G, X=point[1], Y=point[0])
+
+    # 3. вес-время в минутах (единицы согласованы с radius ниже)
+    mpm = speed * 1000 / 60
+    for u, v, k, data in G.edges(keys=True, data=True):
+        data["time"] = data["length"] / mpm
+
+    # 4. подграф достижимости
+    sub = nx.ego_graph(G, center, radius=minutes, distance="time")
+    if sub.number_of_nodes() < 3:
+        raise ValueError("Недостаточно узлов для полигона — проверь dist/minutes")
+
+    # 5. узлы -> полигон (convex_hull: baseline, завышает зону)
+    pts = [Point(d["x"], d["y"]) for _, d in sub.nodes(data=True)]
+    return gpd.GeoSeries(pts).union_all().convex_hull
