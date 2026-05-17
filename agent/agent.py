@@ -12,12 +12,15 @@ from __future__ import annotations
 import json
 import os
 import sys
-from typing import Any
 
 from dotenv import load_dotenv
 
 from core_utils.coverage import find_underserved_areas
 from core_utils.search import search_places
+
+from typing import Optional
+
+from .memory import ConversationMemory
 
 from .tools import (
     _tool_coverage, 
@@ -80,52 +83,95 @@ def _llm_client_and_model():
         3. Любой другой OpenAI-совместимый endpoint (Together, Groq, ...).
     """
     from openai import OpenAI
-
+    print("DEBUG: Build client", flush=True)
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
-    model = f"gpt://{os.getenv("YANDEX_CLOUD_FOLDER")}/{os.getenv("YANDEX_CLOUD_MODEL", "gpt-4o-mini")}"
+    model = model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
-def run(query: str) -> str:
-    """Run one turn of: LLM -> tool -> LLM answer.
-
-    Если не задан ни `OPENAI_API_KEY`, ни `LLM_BASE_URL` — падает в
-    оффлайн-роутинг (см. `_offline_route`).
+def run(query: str, memory: Optional["ConversationMemory"] = None) -> str:
+    """Run agent with memory and multi-step tool calling.
+    
+    Args:
+        query: User query
+        memory: Optional ConversationMemory instance for persistent context.
+                If None, creates ephemeral memory for this turn only.
+    
+    Returns:
+        Final assistant response as string.
     """
+    
+    # Добавляем запрос пользователя в память
+    memory.add_user_message(query)
+    
+    # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
         return _offline_route(query)
-
+    
     client, model = _llm_client_and_model()
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": query},
-    ]
-
-    first = client.chat.completions.create(model=model, messages=messages, tools=TOOLS)
-    msg = first.choices[0].message
-    messages.append(msg.model_dump(exclude_none=True))
-
-    for call in msg.tool_calls or []:
-        name = call.function.name
-        args = json.loads(call.function.arguments or "{}")
-        impl = TOOL_IMPL.get(name)
-        result = impl(args) if impl else {"error": f"unknown tool {name}"}
-        messages.append(
-            {
-                "role": "tool",
-                "tool_call_id": call.id,
-                "content": json.dumps(result, ensure_ascii=False, default=str),
-            }
+    
+    # Цикл tool calling: максимум 5 итераций, чтобы избежать бесконечного цикла
+    max_iterations = 5
+    for iteration in range(max_iterations):
+        print(f"[DEBUG] Iteration {iteration + 1}/{max_iterations}", flush=True)
+        
+        # Получаем актуальную историю сообщений
+        messages = memory.get_messages()
+        
+        # Запрос к LLM
+        response = client.chat.completions.create(
+            model=model, 
+            messages=messages, 
+            tools=TOOLS
         )
-
-    final = client.chat.completions.create(model=model, messages=messages)
+        msg = response.choices[0].message
+        
+        # Если нет tool_calls — финальный ответ
+        if not msg.tool_calls:
+            memory.add_assistant_message(msg.content or "")
+            return msg.content or ""
+        
+        # Иначе: выполняем инструменты и добавляем результаты в память
+        memory.add_assistant_message(msg.content, msg.tool_calls)
+        
+        for call in msg.tool_calls:
+            name = call.function.name
+            args = json.loads(call.function.arguments or "{}")
+            impl = TOOL_IMPL.get(name)
+            
+            if impl:
+                result = impl(args)
+            else:
+                result = {"error": f"unknown tool '{name}'"}
+                print(f"[WARN] Unknown tool: {name}", flush=True)
+            
+            # Добавляем результат инструмента в память
+            memory.add_tool_result(
+                call.id, 
+                json.dumps(result, ensure_ascii=False, default=str)
+            )
+            print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
+    
+    # Если достигли лимита итераций — просим LLM сформулировать ответ на основе накопленного контекста
+    print("[WARN] Max iterations reached, forcing final answer", flush=True)
+    memory.add_assistant_message(
+        "[System] Please provide a final answer based on the tools executed so far."
+    )
+    final = client.chat.completions.create(
+        model=model,
+        messages=memory.get_messages()
+    )
     return final.choices[0].message.content or ""
 
+def main() -> None:    
+    # Создаём память на всю сессию (сохраняется между запросами в рамках одного запуска)
+    memory = ConversationMemory(SYSTEM_PROMPT)
 
-def main() -> None:
-    query = " ".join(sys.argv[1:]) or "Find areas with low pharmacy coverage"
-    print(run(query))
+    query = " ".join(sys.argv[1:])
+
+    print(f"[QUERY] {query}", flush=True)
+    print(run(query, memory=memory))
 
 
 if __name__ == "__main__":
