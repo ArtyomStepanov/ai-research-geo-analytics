@@ -71,32 +71,4 @@ def to_tool_schema(model_class: type[BaseModel], name: str, description: str) ->
         }
     }
 
-
 # Generate TOOLS from Pydantic models
-TOOLS = [
-    to_tool_schema(
-        SearchPlacesRequest,
-        "search_places",
-        "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset. Optionally filter by distance from an anchor point."
-    ),
-    to_tool_schema(
-        RankPlacesRequest,
-        "rank_places",
-        "Rank a previously returned list of places. Strategy is either 'distance' (ascending distance_km) or 'score' (composite rating - distance)."
-    ),
-    to_tool_schema(
-        UnderservedAreasRequest,
-        "find_underserved_areas",
-        "Find grid cells in the city where a given amenity category is underrepresented relative to overall POI density. Use for 'where is X missing' queries."
-    ),
-    to_tool_schema(
-        FilterRequest,
-        "filter_places",
-        "Filters places by category or rating."
-    ),
-    to_tool_schema(
-        DistanceRequest,
-        "calculate_distance",
-        "Calculate distance between two points. Returns number."
-    ),
-]

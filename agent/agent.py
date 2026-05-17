@@ -101,14 +101,6 @@ def run(query: str, memory: Optional["ConversationMemory"] = None) -> str:
     Returns:
         Final assistant response as string.
     """
-    from .memory import ConversationMemory
-    
-    # Если памяти нет — создаём временную на один запрос
-    if memory is None:
-        memory = ConversationMemory(SYSTEM_PROMPT)
-        is_ephemeral = True
-    else:
-        is_ephemeral = False
     
     # Добавляем запрос пользователя в память
     memory.add_user_message(query)
