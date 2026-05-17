@@ -3,12 +3,9 @@ from __future__ import annotations
 
 from math import asin, cos, radians, sin, sqrt
 
-import shapely
 import numpy as np
 import osmnx as ox
 import networkx as nx
-import geopandas as gpd
-from shapely.geometry import Point
 from typing import Literal
 
 ox.settings.use_cache = True
@@ -89,7 +86,6 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
 
 Mode = Literal["walk", "drive", "bike"]
 DEFAULT_SPEEDS: dict[str, float] = {"walk": 4.75, "bike": 10.0}
-
 
 def _graph_for_points(
     points: list[tuple[float, float]], mode: Mode
