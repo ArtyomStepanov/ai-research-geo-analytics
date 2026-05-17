@@ -4,7 +4,7 @@ from typing import Optional, Literal, List, Dict, Any
 
 class SearchPlacesRequest(BaseModel):
     """Search amenities from the local dataset."""
-    category: Optional[list[str]] = Field(None, description="OSM amenity tags, e.g. ['cafe'] or ['cafe', 'restaurant'] etc.")
+    category: Optional[list[str]] = Field(None, description="OSM list of amenity tags, e.g. ['cafe', 'restaurant'] etc. None = any")
     near_lat: Optional[float] = Field(None, description="Latitude of anchor point")
     near_lon: Optional[float] = Field(None, description="Longitude of anchor point")
     max_distance_km: Optional[float] = Field(None, description="Maximum distance from anchor")
