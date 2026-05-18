@@ -128,7 +128,10 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
         response = client.chat.completions.create(
             model=model, 
             messages=messages, 
-            tools=TOOLS
+            tools=TOOLS,
+            max_tokens=65536,
+            tool_choice="auto",
+            temperature=0.3,
         )
         msg = response.choices[0].message
 

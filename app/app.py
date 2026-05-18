@@ -88,9 +88,7 @@ elif go and query:
     with st.spinner("Thinking..."):
         answer = run_agent(query)
 
-    places: list[Place] = []
-    for cat in (categories or [None]):
-        places.extend(search_places(category=cat, limit=80))
+    places: list[Place] = search_places(category=categories, limit=80) or list()
     if ranking_strategy.startswith("score"):
         places = rank_by_score(places)[:80]
     else:
