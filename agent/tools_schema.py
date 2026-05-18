@@ -42,7 +42,7 @@ TOOLS = [
     ),
     to_tool_schema(
         DistanceRequest,
-        "calculate_distance",
-        "Calculate distance between two points. Returns number."
+        "compute_distance",
+        "Compute distance between two points. Returns number."
     ),
 ]
