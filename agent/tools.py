@@ -43,7 +43,6 @@ def _tool_rank(args: dict[str, Any]) -> list[Place]:
     places = args.get("places") or []
     strategy = args.get("strategy", "score")
 
-    # Конвертируем словари в объекты Place, если нужно
     if places and isinstance(places[0], dict):
         places = [Place(**p) for p in places]
 
@@ -63,7 +62,6 @@ def _tool_filtering(args: dict[str, Any]) -> list[Place]:
     places = args.get("places") or []
     strategy = args.get("strategy", "rating")
 
-    # Конвертируем словари в объекты Place, если нужно
     if places and isinstance(places[0], dict):
         places = [Place(**p) for p in places]
 
