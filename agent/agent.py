@@ -29,7 +29,8 @@ from .tools import (
     _tool_rank,
     _tool_search_places,
     _tool_nearest_places,
-    _tool_search_by_name
+    _tool_search_by_name,
+    _tool_build_heatmap,
 )
 
 from .prompts import SYSTEM_PROMPT
@@ -46,6 +47,7 @@ TOOL_IMPL = {
     "find_underserved_areas": _tool_coverage,
     "filter_places": _tool_filtering,
     "compute_distance": _tool_distance,
+    "build_heatmap": _tool_build_heatmap,
 }
 
 
