@@ -165,6 +165,7 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
     )
     return final.choices[0].message.content or ""
 
+
 def main() -> None:    
     # Создаём память на всю сессию (сохраняется между запросами в рамках одного запуска)
     memory = ConversationMemory(SYSTEM_PROMPT)
