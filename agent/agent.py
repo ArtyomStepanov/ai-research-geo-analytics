@@ -27,7 +27,9 @@ from .tools import (
     _tool_distance,
     _tool_filtering,
     _tool_rank,
-    _tool_search
+    _tool_search_places,
+    _tool_nearest_places,
+    _tool_search_by_name
 )
 
 from .prompts import SYSTEM_PROMPT
@@ -37,7 +39,9 @@ load_dotenv()
 
 
 TOOL_IMPL = {
-    "search_places": _tool_search,
+    "nearest_places": _tool_nearest_places,
+    "search_by_name": _tool_search_by_name,
+    "search_places": _tool_search_places,
     "rank_places": _tool_rank,
     "find_underserved_areas": _tool_coverage,
     "filter_places": _tool_filtering,
@@ -65,6 +69,7 @@ def _offline_route(query: str) -> str:
         if c in q:
             category = c
             break
+
     places = search_places(category=category, limit=5)
     return (
         f"[offline] First {len(places)} places (category={category}):\n"
@@ -83,7 +88,7 @@ def _llm_client_and_model():
         3. Любой другой OpenAI-совместимый endpoint (Together, Groq, ...).
     """
     from openai import OpenAI
-    print("DEBUG: Build client", flush=True)
+    #print("DEBUG: Build client", flush=True)
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
     model = model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
@@ -104,37 +109,33 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
     
     # Добавляем запрос пользователя в память
     memory.add_user_message(query)
-    
+
     # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
         return _offline_route(query)
     
     client, model = _llm_client_and_model()
-    
+
     # Цикл tool calling: максимум 5 итераций, чтобы избежать бесконечного цикла
     max_iterations = 5
     for iteration in range(max_iterations):
-        print(f"[DEBUG] Iteration {iteration + 1}/{max_iterations}", flush=True)
-        
-        # Получаем актуальную историю сообщений
+        #print(f"[DEBUG] Iteration {iteration + 1}/{max_iterations}", flush=True)
+
         messages = memory.get_messages()
-        
-        # Запрос к LLM
+
         response = client.chat.completions.create(
             model=model, 
             messages=messages, 
             tools=TOOLS
         )
         msg = response.choices[0].message
-        
-        # Если нет tool_calls — финальный ответ
+
         if not msg.tool_calls:
             memory.add_assistant_message(msg.content or "")
             return msg.content or ""
-        
-        # Иначе: выполняем инструменты и добавляем результаты в память
+
         memory.add_assistant_message(msg.content, msg.tool_calls)
-        
+
         for call in msg.tool_calls:
             name = call.function.name
             args = json.loads(call.function.arguments or "{}")
@@ -144,17 +145,17 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
                 result = impl(args)
             else:
                 result = {"error": f"unknown tool '{name}'"}
-                print(f"[WARN] Unknown tool: {name}", flush=True)
-            
+                #print(f"[WARN] Unknown tool: {name}", flush=True)
+
             # Добавляем результат инструмента в память
             memory.add_tool_result(
                 call.id, 
                 json.dumps(result, ensure_ascii=False, default=str)
             )
-            print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
-    
+            #print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
+
     # Если достигли лимита итераций — просим LLM сформулировать ответ на основе накопленного контекста
-    print("[WARN] Max iterations reached, forcing final answer", flush=True)
+    #print("[WARN] Max iterations reached, forcing final answer", flush=True)
     memory.add_assistant_message(
         "[System] Please provide a final answer based on the tools executed so far."
     )
@@ -164,13 +165,14 @@ def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(
     )
     return final.choices[0].message.content or ""
 
+
 def main() -> None:    
     # Создаём память на всю сессию (сохраняется между запросами в рамках одного запуска)
     memory = ConversationMemory(SYSTEM_PROMPT)
 
     query = " ".join(sys.argv[1:])
 
-    print(f"[QUERY] {query}", flush=True)
+    #print(f"[QUERY] {query}", flush=True)
     print(run(query, memory=memory))
 
 

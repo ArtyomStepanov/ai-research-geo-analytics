@@ -1,10 +1,12 @@
 """Pydantic models for OpenAI tool schemas."""
 from pydantic import BaseModel, Field
 from typing import Optional, Literal, List, Dict, Any
+from lib.data_types import Place
 
 class SearchPlacesRequest(BaseModel):
     """Search amenities from the local dataset."""
     category: Optional[list[str]] = Field(None, description="OSM list of amenity tags, e.g. ['cafe', 'restaurant'] etc. None = any")
+    name: Optional[str] = Field(None, description="OSM name amenity, e.g. 'PizzaHut', 'Starbucks'")
     near_lat: Optional[float] = Field(None, description="Latitude of anchor point")
     near_lon: Optional[float] = Field(None, description="Longitude of anchor point")
     max_distance_km: Optional[float] = Field(None, description="Maximum distance from anchor")
@@ -13,7 +15,7 @@ class SearchPlacesRequest(BaseModel):
 
 class RankPlacesRequest(BaseModel):
     """Rank a list of places by strategy."""
-    places: List[Dict[str, Any]] = Field(..., description="List of place dictionaries")
+    places: List[Place] = Field(..., description="List of place dictionaries")
     strategy: Literal["distance", "score"] = Field(
         ..., 
         description="Ranking strategy: 'distance' (ascending) or 'score' (composite)"
@@ -28,7 +30,7 @@ class UnderservedAreasRequest(BaseModel):
 
 class FilterRequest(BaseModel):
     """Filter places by category or rating."""
-    places: List[Dict[str, Any]] = Field(..., description="List of places to filter")
+    places: List[Place] = Field(..., description="List of places to filter")
     strategy: Literal["category", "rating"] = Field(
         default="rating",
         description="Filtering mode"

@@ -1,10 +1,11 @@
 """OpenAI-compatible tool schema definitions for the agent."""
+
 from lib.data_types.agent_tools_schema import to_tool_schema
 from lib.data_types.agent_tools_schema import (
-    SearchPlacesRequest, 
-    RankPlacesRequest, 
+    SearchPlacesRequest,
+    RankPlacesRequest,
     UnderservedAreasRequest,
-    FilterRequest, 
+    FilterRequest,
     DistanceRequest
 )
 
@@ -13,6 +14,16 @@ TOOLS = [
         SearchPlacesRequest,
         "search_places",
         "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset. Optionally filter by distance from an anchor point."
+    ),
+    to_tool_schema(
+        SearchPlacesRequest,
+        "nearest_places",
+        "Search N amenities (cafe, restaurant, pharmacy, bar, ...) near the point from the local dataset"
+    ),
+    to_tool_schema(
+        SearchPlacesRequest,
+        "search_by_name",
+        "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset by their name. Optionally filter by distance from an anchor point."
     ),
     to_tool_schema(
         RankPlacesRequest,

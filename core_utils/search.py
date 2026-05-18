@@ -112,8 +112,8 @@ def nearest_places(
 
 
 def search_by_name(
-        point: tuple[float, float],
-        name: str
+        name: str,
+        point: Optional[tuple[float, float]]
 ) -> list[Place]:
     """Return sorted places which match to the `name`."""
     return search_places(near=point, name=name, limit=None)
