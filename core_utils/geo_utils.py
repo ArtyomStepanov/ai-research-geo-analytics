@@ -38,6 +38,28 @@ def compute_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
     return haversine_km(p1[0], p1[1], p2[0], p2[1])
 
 
+def _coerce_points(raw: Any) -> list[tuple]:
+    """LLM шлёт points по-разному: list[list], list[dict], JSON-строкой.
+
+    Нормализуем в list[(lat, lon[, weight])]. НЕ используем ast.literal_eval
+    вслепую (как в _tool_search_places) — он падает на None/'cafe'/'a,b'.
+    """
+    if raw is None:
+        raise ValueError("heatmap: 'points' is required")
+    if isinstance(raw, str):
+        import json
+        raw = json.loads(raw)          # JSON, не ast: предсказуемо падает с понятной ошибкой
+    pts: list[tuple] = []
+    for item in raw:
+        if isinstance(item, dict):     # {"lat":.., "lon":.., "weight":..}
+            lat, lon = item["lat"], item["lon"]
+            w = item.get("weight")
+            pts.append((lat, lon, w) if w is not None else (lat, lon))
+        else:                          # [lat, lon] или [lat, lon, weight]
+            pts.append(tuple(item))
+    return pts
+
+
 def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
     """Build a folium HeatMap from a list of (lat, lon) or (lat, lon, weight) points.
 

@@ -3,10 +3,13 @@
 from lib.data_types.agent_tools_schema import to_tool_schema
 from lib.data_types.agent_tools_schema import (
     SearchPlacesRequest,
+    NearestPlacesRequest,
+    SearchByNameRequest,
     RankPlacesRequest,
     UnderservedAreasRequest,
     FilterRequest,
-    DistanceRequest
+    DistanceRequest,
+    HeatmapRequest
 )
 
 TOOLS = [
@@ -16,12 +19,12 @@ TOOLS = [
         "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset. Optionally filter by distance from an anchor point."
     ),
     to_tool_schema(
-        SearchPlacesRequest,
+        NearestPlacesRequest,
         "nearest_places",
         "Search N amenities (cafe, restaurant, pharmacy, bar, ...) near the point from the local dataset"
     ),
     to_tool_schema(
-        SearchPlacesRequest,
+        SearchByNameRequest,
         "search_by_name",
         "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset by their name. Optionally filter by distance from an anchor point."
     ),
@@ -42,7 +45,12 @@ TOOLS = [
     ),
     to_tool_schema(
         DistanceRequest,
-        "calculate_distance",
-        "Calculate distance between two points. Returns number."
+        "compute_distance",
+        "Compute distance between two points. Returns number."
+    ),
+    to_tool_schema(
+        HeatmapRequest,
+        "build_heatmap",
+        "Build an HTML heat map from weighted points; returns a file path."
     ),
 ]
