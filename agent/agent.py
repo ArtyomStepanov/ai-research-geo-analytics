@@ -15,7 +15,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from core_utils.coverage import find_underserved_areas
+from core_utils.coverage import compute_opportunity_grid
 from core_utils.search import search_places
 
 from typing import Optional
@@ -23,7 +23,7 @@ from typing import Optional
 from .memory import ConversationMemory
 
 from .tools import (
-    _tool_coverage, 
+    _tool_opportunity_grid, 
     _tool_distance,
     _tool_filtering,
     _tool_rank,
@@ -44,7 +44,7 @@ TOOL_IMPL = {
     "search_by_name": _tool_search_by_name,
     "search_places": _tool_search_places,
     "rank_places": _tool_rank,
-    "find_underserved_areas": _tool_coverage,
+    "opportunity_grid": _tool_opportunity_grid,
     "filter_places": _tool_filtering,
     "compute_distance": _tool_distance,
     "build_heatmap": _tool_build_heatmap,
@@ -58,12 +58,12 @@ def _offline_route(query: str) -> str:
     end-to-end без сети и ключа.
     """
     q = query.lower()
-    if "underserved" in q or "low" in q and "coverage" in q or "lack" in q:
+    if "underserved" in q or "low" in q and "coverage" in q or "lack" in q or "open" in q:
         cat = "pharmacy" if "pharmacy" in q else "cafe" if "cafe" in q else "pharmacy"
-        cells = find_underserved_areas(category=cat, top_k=5)
+        cells = compute_opportunity_grid(category=cat, hex_resolution=8)
         return (
-            f"[offline] Top underserved cells for '{cat}':\n"
-            + json.dumps(cells, indent=2, ensure_ascii=False, default=str)
+            f"[offline] Opportunity grid for '{cat}' ({len(cells)} hexes):\n"
+            + json.dumps(cells[:5], indent=2, ensure_ascii=False, default=str)
         )
 
     category = None

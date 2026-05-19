@@ -1,6 +1,6 @@
 import os
 
-from core_utils.coverage import find_underserved_areas
+from core_utils.coverage import compute_opportunity_grid
 from core_utils.ranking import rank_by_distance, rank_by_score
 from core_utils.search import nearest_places, search_by_name, search_places
 from core_utils.filtering import filter_by_category, filter_by_rating
@@ -15,8 +15,11 @@ def _tool_search_places(args: dict[str, Any]) -> list[Place]:
     near = None
     if "near_lat" in args and "near_lon" in args:
         near = (float(args["near_lat"]), float(args["near_lon"]))
+    cat = args.get("category")
+    if isinstance(cat, str):
+        cat = [cat]
     return search_places(
-        category=ast.literal_eval(args.get("category")),
+        category=cat,
         near=near,
         max_distance_km=args.get("max_distance_km"),
         limit=int(args.get("limit", 10)),
@@ -27,8 +30,11 @@ def _tool_nearest_places(args: dict[str, Any]) -> list[Place]:
     near = None
     if "near_lat" in args and "near_lon" in args:
         near = (float(args["near_lat"]), float(args["near_lon"]))
+    cat = args.get("category")
+    if isinstance(cat, str):
+        cat = [cat]
     return nearest_places(
-        category=ast.literal_eval(args.get("category")),
+        category=cat,
         point=near,
         limit=int(args.get("limit", 10)),
     )
@@ -53,13 +59,6 @@ def _tool_rank(args: dict[str, Any]) -> list[Place]:
     return rank_by_score(places)
 
 
-def _tool_coverage(args: dict[str, Any]) -> list[dict]:
-    return find_underserved_areas(
-        category=args.get("category", "pharmacy"),
-        top_k=int(args.get("top_k", 10)),
-    )
-
-
 def _tool_filtering(args: dict[str, Any]) -> list[Place]:
     places = args.get("places") or []
     strategy = args.get("strategy", "rating")
@@ -80,26 +79,47 @@ def _tool_distance(args: dict[str, Any]) -> float:
 
 
 def _tool_build_heatmap(args: dict[str, Any]) -> dict:
-    """Построить HeatMap и сохранить в HTML. Возвращает путь (JSON-сериализуемо).
-
-    Карту (folium.Map) нельзя вернуть напрямую — agent.py делает json.dumps
-    над результатом, а Map не сериализуется. Поэтому пишем файл и отдаём путь.
-    """
-    points = _coerce_points(args.get("points"))
-
-    out_dir = args.get("out_dir", "outputs")
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, args.get("filename", "heatmap.html"))
-
-    kwargs = {}
-    for k in ("zoom_start", "radius", "legend", "legend_title"):
-        if k in args:
-            kwargs[k] = args[k]
-
+    """Построить HeatMap и передать данные в UI (без сохранения файлов)."""
+    # Нормализуем точки (список кортежей)
     try:
-        m = build_heatmap(points, **kwargs)
+        points = _coerce_points(args.get("points"))
     except ValueError as e:
-        return {"error": str(e)}      # пустой points и т.п. — понятная ошибка агенту
+        return {"error": str(e)}
 
-    m.save(out_path)
-    return {"status": "ok", "path": out_path, "n_points": len(points)}
+    radius = args.get("radius", 15)
+    zoom_start = args.get("zoom_start", 13)
+
+    # 1. Сохраняем данные в Session State, чтобы UI мог их прочитать
+    try:
+        import streamlit as st
+        # Мы используем уникальный ключ, чтобы не конфликтовать с другими данными
+        st.session_state['agent_heatmap'] = {
+            'points': points,
+            'radius': radius,
+            'zoom_start': zoom_start
+        }
+    except Exception:
+        pass  # Если запускается вне Streamlit (тесты), просто игнорируем
+
+    # 2. Возвращаем агенту подтверждение (вместо пути к файлу)
+    return {"status": "ok", "n_points": len(points)}
+
+
+def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
+    """Calculate hex-grid opportunity map and return structured cells."""
+    
+    cells = compute_opportunity_grid(
+        category=args.get("category", "pharmacy"),
+        hex_resolution=int(args.get("hex_resolution", 8)),
+        demand_threshold=float(args.get("demand_threshold", 0.0)),
+        competitor_rating_weight=float(args.get("competitor_rating_weight", 1.0)),
+    )
+
+    # Сохраняем в session_state, чтобы UI мог прочитать и отрисовать
+    try:
+        import streamlit as st
+        st.session_state['opportunity_grid'] = {'cells': cells}
+    except Exception:
+        pass  # Игнорируем при запуске вне Streamlit (тесты/CLI)
+
+    return cells

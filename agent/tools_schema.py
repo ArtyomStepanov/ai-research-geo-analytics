@@ -6,10 +6,10 @@ from lib.data_types.agent_tools_schema import (
     NearestPlacesRequest,
     SearchByNameRequest,
     RankPlacesRequest,
-    UnderservedAreasRequest,
     FilterRequest,
+    OpportunityGridRequest,
     DistanceRequest,
-    HeatmapRequest
+    HeatmapRequest,
 )
 
 TOOLS = [
@@ -34,9 +34,12 @@ TOOLS = [
         "Rank a previously returned list of places. Strategy is either 'distance' (ascending distance_km) or 'score' (composite rating - distance)."
     ),
     to_tool_schema(
-        UnderservedAreasRequest,
-        "find_underserved_areas",
-        "Find grid cells in the city where a given amenity category is underrepresented relative to overall POI density. Use for 'where is X missing' queries."
+        OpportunityGridRequest,
+        "opportunity_grid",
+        "Compute a hex-grid opportunity map showing demand score, competitor density, and optimal "
+        "locations for a new point of interest. Use for queries about: low/lacking coverage, "
+        "underserved areas, where to open a new X, market saturation, best location analysis, "
+        "'find areas with low X coverage', 'where do we lack X', 'open new X'."
     ),
     to_tool_schema(
         FilterRequest,
@@ -51,6 +54,7 @@ TOOLS = [
     to_tool_schema(
         HeatmapRequest,
         "build_heatmap",
-        "Build an HTML heat map from weighted points; returns a file path."
+        "Render a heatmap of places already retrieved by search_places/nearest_places. "
+        "Do NOT use for coverage or opportunity analysis — use opportunity_grid instead."
     ),
 ]

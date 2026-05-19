@@ -41,21 +41,20 @@ def compute_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
 def _coerce_points(raw: Any) -> list[tuple]:
     """LLM шлёт points по-разному: list[list], list[dict], JSON-строкой.
 
-    Нормализуем в list[(lat, lon[, weight])]. НЕ используем ast.literal_eval
-    вслепую (как в _tool_search_places) — он падает на None/'cafe'/'a,b'.
+    Нормализуем в list[(lat, lon, weight)]
     """
     if raw is None:
         raise ValueError("heatmap: 'points' is required")
     if isinstance(raw, str):
         import json
-        raw = json.loads(raw)          # JSON, не ast: предсказуемо падает с понятной ошибкой
+        raw = json.loads(raw)
     pts: list[tuple] = []
     for item in raw:
-        if isinstance(item, dict):     # {"lat":.., "lon":.., "weight":..}
+        if isinstance(item, dict):
             lat, lon = item["lat"], item["lon"]
             w = item.get("weight")
             pts.append((lat, lon, w) if w is not None else (lat, lon))
-        else:                          # [lat, lon] или [lat, lon, weight]
+        else:
             pts.append(tuple(item))
     return pts
 
@@ -102,7 +101,7 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
         """
         m.get_root().html.add_child(folium.Element(legend_html))
 
-    HeatMap(weighted, radius=kwargs.get("radius", 12)).add_to(m)
+    HeatMap(weighted, radius=kwargs.get("radius", 32)).add_to(m)
     return m
 
 
@@ -170,13 +169,10 @@ def route_length(points: list[tuple[float, float]], mode: Mode = "walk") -> floa
         try:
             total_m += nx.shortest_path_length(G, u, v, weight="length")
         except nx.NetworkXNoPath:
-            # ВАРИАНТ a: ошибка
             raise ValueError(
                 f"Нет пути по сети между точкой {i+1} и {i+2} "
                 f"({points[i]} -> {points[i+1]}) в режиме {mode!r}"
             )
-            # ВАРИАНТ b: прямая линия
-            # total_m += haversine_km(*points[i], *points[i+1]) * 1000
     return total_m
 
 

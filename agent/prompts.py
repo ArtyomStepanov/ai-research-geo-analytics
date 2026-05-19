@@ -7,7 +7,7 @@ data. Always:
 
 - Prefer calling a tool over guessing coordinates or counts.
 - When you receive tool results, summarise them in natural language and
-  reference at most 5 places by name.
+  reference some places by names (e.g. 5 places).
 - If a query is ambiguous (e.g. no city / no anchor point), ask a short
   clarifying question instead of fabricating values.
 """
