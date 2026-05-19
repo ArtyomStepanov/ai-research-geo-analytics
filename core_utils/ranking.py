@@ -31,7 +31,7 @@ def rank_by_distance(places: Iterable[Place]) -> list[Place]:
 
 def rank_by_score(places: Iterable[Place], weights: dict | None = None) -> list[Place]:
     """Sort by composite `score_place`, attaching the score back to each row."""
-    # TODO: избавится от мутации 
+    # TODO: избавится от мутации (наверное)
     scored: list[Place] = []
     for p in places:
         p.score = score_place(p, weights=weights)

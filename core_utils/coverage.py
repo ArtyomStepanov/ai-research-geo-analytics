@@ -36,7 +36,7 @@ def compute_opportunity_grid(
     """
     df = _load_places(csv_path)
     if not {"lat", "lon", "amenity"}.issubset(df.columns):
-        raise ValueError("Dataset must contain 'lat', 'lon', 'amenity' columns")
+        raise ValueError(f"Dataset must contain lat, lon, amenity columns")
 
     # Привязка точек к H3-гексам
     df["hex_id"] = df.apply(lambda r: h3.latlng_to_cell(r["lat"], r["lon"], hex_resolution), axis=1)

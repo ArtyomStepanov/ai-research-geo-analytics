@@ -1,0 +1,6 @@
+LAT = "google_lat"
+LON = "google_lon"
+AMENITY = "amenity"
+NAME = "best_name"
+CATEGORY = "google_category"
+RATING = "rating"

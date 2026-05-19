@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional
 
 from lib.data_types import Place
+from lib.dataset_names import LAT, LON, AMENITY, NAME, RATING
 import pandas as pd
 from rapidfuzz import process, fuzz
 
@@ -27,17 +28,32 @@ def _load_places(csv_path: Optional[str] = None) -> pd.DataFrame:
         4. `data/sample_places.csv` — встроенный safety-net датасет.
 
     """
+    df = None
     if csv_path is not None:
-        return pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path)
 
     for sub in ("processed", "raw"):
         for p in sorted((DATA_DIR / sub).glob("*amenities*.csv")):
-            return pd.read_csv(p)
+            df = pd.read_csv(p)
+            break
+        if df is not None:
+            break
 
     sample = DATA_DIR / "sample_places.csv"
     if sample.exists():
-        return pd.read_csv(sample)
+        df = pd.read_csv(sample)
 
+    if df is not None:
+        df = df.rename(
+            columns={
+                LAT: "lat",
+                LON: "lon",
+                NAME: "name",
+                AMENITY: "amenity",
+                RATING: "rating"
+            }
+        )
+        return df
     raise FileNotFoundError(
         "No places CSV found. Run `python scripts/download_osm.py --city ...` "
         "or `python scripts/generate_sample_data.py`."
