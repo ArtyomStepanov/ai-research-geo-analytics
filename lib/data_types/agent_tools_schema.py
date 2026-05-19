@@ -1,6 +1,6 @@
 """Pydantic models for OpenAI tool schemas."""
 from pydantic import BaseModel, Field
-from typing import Optional, Literal, List, Dict, Any
+from typing import Optional, Literal, List
 from lib.data_types import Place
 
 class SearchPlacesRequest(BaseModel):
@@ -59,6 +59,26 @@ class UnderservedAreasRequest(BaseModel):
     top_k: int = Field(10, ge=1, description="How many top cells to return.")
 
 
+class OpportunityGridRequest(BaseModel):
+    """Calculate a hexagonal opportunity grid for site selection."""
+    category: str = Field(
+        ...,
+        description="Target amenity type, e.g. 'pharmacy', 'cafe', 'bar'. Used to filter competitors."
+    )
+    hex_resolution: int = Field(
+        8, ge=5, le=12,
+        description="H3 resolution (8 ~ 0.74 km cell edge). Larger = finer grid, smaller = coarser."
+    )
+    demand_threshold: float = Field(
+        0.0,
+        description="Minimum demand score to mark a hex as visible/colored on the map."
+    )
+    competitor_rating_weight: float = Field(
+        1.0, ge=0.0,
+        description="Multiplier for competitor rating impact on saturation. Higher = stricter filtering."
+    )
+
+
 class FilterRequest(BaseModel):
     """Filter places returned by a previous search tool."""
     places: List[Place] = Field(
@@ -102,8 +122,6 @@ def to_tool_schema(model_class: type[BaseModel], name: str, description: str) ->
             "name": name,
             "description": description,
             "parameters": model_class.model_json_schema(),
-            "strict": "true"
+            "strict": True
         }
     }
-
-# Generate TOOLS from Pydantic models
