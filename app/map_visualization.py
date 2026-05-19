@@ -40,14 +40,14 @@ def places_map(places: Iterable[Place], zoom_start: int = 13, show_heatmap: bool
             popup += f"<br>rating: {p.rating}"
         if "score" in p:
             popup += f"<br>score: {p.score}"
-            folium.CircleMarker(
-                location=(p.lat, p.lon),
-                radius=_BASE_CIRCLE_RADIUS,
-                popup=popup,
-                color="#1f77b4",
-                fill=True,
-                fill_opacity=0.85
-            ).add_to(m)
+        folium.CircleMarker(
+            location=(p.lat, p.lon),
+            radius=_BASE_CIRCLE_RADIUS,
+            popup=popup,
+            color="#1f77b4",
+            fill=True,
+            fill_opacity=0.85
+        ).add_to(m)
     return m
 
 
