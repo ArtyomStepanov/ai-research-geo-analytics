@@ -10,5 +10,4 @@ def filter_by_category(places: Iterable[Place], category: str) -> list[Place]:
 
 
 def filter_by_rating(places: Iterable[Place], min_rating: float) -> list[Place]:
-    """TODO: рейтингов в OSM нет — выбрать источник (Yelp, Google, синтетика)."""
     return [p for p in places if p.rating is not None and p.rating >= min_rating]

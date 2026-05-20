@@ -16,7 +16,7 @@ HEX_SIZE_REFERENCE = {
 
 def compute_opportunity_grid(
     category: str = "pharmacy",
-    hex_resolution: int = 8,
+    hex_resolution: int = 5,
     csv_path: Optional[str] = None,
     demand_threshold: float = 0.0,
     competitor_rating_weight: float = 1.0,
