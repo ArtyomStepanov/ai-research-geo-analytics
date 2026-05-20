@@ -5,6 +5,7 @@ from typing import Iterable
 from lib.data_types import Place
 
 import folium
+import html
 from folium.plugins import HeatMap
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
@@ -16,6 +17,29 @@ def _center(points: list[tuple[float, float]]) -> tuple[float, float]:
         sum(p[0] for p in points) / len(points),
         sum(p[1] for p in points) / len(points),
     )
+
+
+def _add_placces(places: list[Place], m: folium.Map) -> None:
+    for p in places:
+        parts = [
+            f"<b>{html.escape(str(p.name))}</b>",
+            html.escape(str(p.amenity)),
+        ]
+        if p.rating is not None:
+            parts.append(f"rating: {p.rating}")
+        if p.score is not None:
+            parts.append(f"score: {p.score}")
+        if p.price_level is not None:
+            parts.append(f"price: {p.price_level}")
+        folium.CircleMarker(
+            location=(p.lat, p.lon),
+            radius=_BASE_CIRCLE_RADIUS,
+            popup=folium.Popup("<br>".join(parts), max_width=300),
+            weight=1,
+            color="#1f77b4",
+            fill=True,
+            fill_opacity=0.85
+        ).add_to(m)
 
 
 def places_map(places: Iterable[Place], zoom_start: int = 13, show_heatmap: bool = False) -> folium.Map:
@@ -34,20 +58,7 @@ def places_map(places: Iterable[Place], zoom_start: int = 13, show_heatmap: bool
             max_zoom=15
         ).add_to(m)
 
-    for p in places:
-        popup = f"<b>{p.name}</b><br>{p.amenity}"
-        if "rating" in p:
-            popup += f"<br>rating: {p.rating}"
-        if "score" in p:
-            popup += f"<br>score: {p.score}"
-        folium.CircleMarker(
-            location=(p.lat, p.lon),
-            radius=_BASE_CIRCLE_RADIUS,
-            popup=popup,
-            color="#1f77b4",
-            fill=True,
-            fill_opacity=0.85
-        ).add_to(m)
+    _add_placces(places, m)
     return m
 
 
@@ -170,19 +181,6 @@ def opportunity_hex_map(
                 f"Total POI: {c['total_places']}"
             ),
         ).add_to(m)
-
-    if places:
-        for p in places:
-            popup = f"<b>{p.name}</b><br>{p.amenity}"
-            if "rating" in p:
-                popup += f"<br>rating: {p.rating}"
-            folium.CircleMarker(
-                location=(p.lat, p.lon),
-                radius=_BASE_CIRCLE_RADIUS,
-                popup=popup,
-                weight=1,
-                color="#1f77b4",
-                fill=True,
-                fill_opacity=0.85
-            ).add_to(m)
+    
+    _add_placces(places, m)
     return m
