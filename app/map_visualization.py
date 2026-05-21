@@ -7,7 +7,7 @@ from lib.data_types import Place
 import folium
 import html
 from folium.plugins import HeatMap
-import matplotlib.cm as cm
+import matplotlib
 import matplotlib.colors as mcolors
 
 _BASE_CIRCLE_RADIUS = 4
@@ -19,7 +19,9 @@ def _center(points: list[tuple[float, float]]) -> tuple[float, float]:
     )
 
 
-def _add_placces(places: list[Place], m: folium.Map) -> None:
+def _add_places(places: list[Place] | None, m: folium.Map) -> None:
+    if not places:
+        return
     for p in places:
         parts = [
             f"<b>{html.escape(str(p.name))}</b>",
@@ -60,7 +62,7 @@ def places_map(places: Iterable[Place], zoom_start: int = 13, show_heatmap: bool
             max_zoom=15
         ).add_to(m)
 
-    _add_placces(places, m)
+    _add_places(places, m)
     return m
 
 
@@ -143,12 +145,15 @@ def opportunity_hex_map(
         values.append(val)
 
     # Нормализация + настройка градиента
-    min_val = min_demand if min_demand is not None else min(v for v, cell in zip(values, cells) if cell["is_visible"])
-    max_val = max_demand if max_demand is not None else max(v for v, cell in zip(values, cells) if cell["is_visible"])
+    visible_vals = [v for v, c in zip(values, cells) if c["is_visible"]]
+    if not visible_vals:
+        visible_vals = values
+    min_val = min_demand if min_demand is not None else min(visible_vals)
+    max_val = max_demand if max_demand is not None else max(visible_vals)
     span = max_val - min_val + 1e-6  # защита от деления на 0
 
     # Colormap из matplotlib (поддерживает 256 цветов)
-    cmap = cm.get_cmap(colormap)
+    cmap = matplotlib.colormaps[colormap]
     norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
 
     for c, val in zip(cells, values):
@@ -184,5 +189,5 @@ def opportunity_hex_map(
             ),
         ).add_to(m)
     
-    _add_placces(places, m)
+    _add_places(places, m)
     return m
