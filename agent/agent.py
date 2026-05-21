@@ -83,7 +83,6 @@ def _offline_route(query: str) -> str:
 
 def _llm_client_and_model():
     """Build an OpenAI-compatible client.
-
     Поддерживаются три варианта:
         1. Внешний OpenAI: задан только `OPENAI_API_KEY`.
         2. Self-hosted (Ollama / vLLM / LM Studio / llama.cpp server) — задаём
@@ -99,21 +98,19 @@ def _llm_client_and_model():
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
-def run(query: str, memory: Optional["ConversationMemory"] = ConversationMemory(SYSTEM_PROMPT)) -> str:
+def run(query: str, memory: Optional[ConversationMemory] = None) -> str:
     """Run agent with memory and multi-step tool calling.
-    
     Args:
         query: User query
         memory: Optional ConversationMemory instance for persistent context.
                 If None, creates ephemeral memory for this turn only.
-    
     Returns:
         Final assistant response as string.
     """
-    
     # Добавляем запрос пользователя в память
+    if memory is None:
+        memory = ConversationMemory(SYSTEM_PROMPT)   # новый объект на каждый вызов без memory
     memory.add_user_message(query)
-
     # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
         return _offline_route(query)
