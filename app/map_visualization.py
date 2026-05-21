@@ -10,7 +10,7 @@ from folium.plugins import HeatMap
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
-_BASE_CIRCLE_RADIUS = 6
+_BASE_CIRCLE_RADIUS = 4
 
 def _center(points: list[tuple[float, float]]) -> tuple[float, float]:
     return (
@@ -27,6 +27,8 @@ def _add_placces(places: list[Place], m: folium.Map) -> None:
         ]
         if p.rating is not None:
             parts.append(f"rating: {p.rating}")
+        if p.opening_hours is not None:
+            parts.append(p.opening_hours)
         if p.score is not None:
             parts.append(f"score: {p.score}")
         if p.price_level is not None:
