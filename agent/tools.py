@@ -1,12 +1,9 @@
-import os
-
 from core_utils.coverage import compute_opportunity_grid
 from core_utils.ranking import rank_by_distance, rank_by_score
 from core_utils.search import nearest_places, search_by_name, search_places
 from core_utils.filtering import filter_by_category, filter_by_rating
-from core_utils.geo_utils import compute_distance, build_heatmap, _coerce_points
+from core_utils.geo_utils import compute_distance, _coerce_points, geocode
 from lib.data_types import Place
-import ast
 
 from typing import Any
 
@@ -85,10 +82,8 @@ def _tool_build_heatmap(args: dict[str, Any]) -> dict:
         points = _coerce_points(args.get("points"))
     except ValueError as e:
         return {"error": str(e)}
-
     radius = args.get("radius", 15)
     zoom_start = args.get("zoom_start", 13)
-
     # 1. Сохраняем данные в Session State, чтобы UI мог их прочитать
     try:
         import streamlit as st
@@ -100,9 +95,20 @@ def _tool_build_heatmap(args: dict[str, Any]) -> dict:
         }
     except Exception:
         pass  # Если запускается вне Streamlit (тесты), просто игнорируем
-
     # 2. Возвращаем агенту подтверждение (вместо пути к файлу)
     return {"status": "ok", "n_points": len(points)}
+
+
+def _tool_geocode(args: dict[str, Any]) -> dict:
+    location = args.get("location", "").strip()
+    city_hint = args.get("city_hint", "")
+    if not location:
+        return {"error": "location is required"}
+    result = geocode(location, city_hint)
+    if result is None:
+        return {"error": f"Could not geocode '{location}'"}
+    lat, lon = result
+    return {"lat": lat, "lon": lon, "location": location}
 
 
 def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
@@ -114,7 +120,6 @@ def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
         demand_threshold=float(args.get("demand_threshold", 0.0)),
         competitor_rating_weight=float(args.get("competitor_rating_weight", 1.0)),
     )
-
     # Сохраняем в session_state, чтобы UI мог прочитать и отрисовать
     try:
         import streamlit as st

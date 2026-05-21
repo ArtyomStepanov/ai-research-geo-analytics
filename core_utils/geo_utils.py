@@ -1,17 +1,17 @@
 """Geospatial helpers: distances, heatmaps, simple aggregations."""
 from __future__ import annotations
 
-from math import asin, cos, radians, sin, sqrt
-
 import numpy as np
 import osmnx as ox
 import networkx as nx
-from typing import Literal
+from typing import Literal, Any
 
 ox.settings.use_cache = True
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance between two points in kilometers."""
+    from math import asin, cos, radians, sin, sqrt
+
     r = 6371.0
     lat1, lon1, lat2, lon2 = map(radians, (lat1, lon1, lat2, lon2))
     dlat = lat2 - lat1
@@ -197,3 +197,25 @@ def isochrone(
         for i in range(1, len(points))
         if nodes[i] in reachable_nodes
     ]
+
+
+def geocode(location: str, city_hint: str = "") -> tuple[float, float] | None:
+    """Resolve a place name to (lat, lon) via Nominatim. Returns None on failure.
+    TODO: RateLimiter для многократного вызова функции за 1 сек.
+    TODO: cache
+    """
+    from geopy.geocoders import Nominatim
+    from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+
+    query = f"{location}, {city_hint}".strip(", ") if city_hint else location
+    geolocator = Nominatim(user_agent="geo-analytics-agent/1.0", timeout=5)
+    
+    result_coords: tuple[float, float] | None = None
+    try:
+        result = geolocator.geocode(query)
+        if result:
+            result_coords = (result.latitude, result.longitude)
+    except (GeocoderTimedOut, GeocoderServiceError):
+        pass
+
+    return result_coords
