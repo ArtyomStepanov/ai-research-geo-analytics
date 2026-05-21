@@ -23,7 +23,7 @@ from typing import Optional
 from .memory import ConversationMemory
 
 from .tools import (
-    _tool_opportunity_grid, 
+    _tool_opportunity_grid,
     _tool_distance,
     _tool_filtering,
     _tool_rank,
@@ -31,6 +31,7 @@ from .tools import (
     _tool_nearest_places,
     _tool_search_by_name,
     _tool_build_heatmap,
+    _tool_geocode,
 )
 
 from .prompts import SYSTEM_PROMPT
@@ -40,6 +41,7 @@ load_dotenv()
 
 
 TOOL_IMPL = {
+    "geocode": _tool_geocode,
     "nearest_places": _tool_nearest_places,
     "search_by_name": _tool_search_by_name,
     "search_places": _tool_search_places,

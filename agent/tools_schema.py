@@ -10,9 +10,17 @@ from lib.data_types.agent_tools_schema import (
     OpportunityGridRequest,
     DistanceRequest,
     HeatmapRequest,
+    GeocodeRequest,
 )
 
 TOOLS = [
+    to_tool_schema(
+        GeocodeRequest,
+        "geocode",
+        "Convert a place name or landmark (toponym) to lat/lon coordinates. "
+        "Call this FIRST when the user mentions a place name instead of numeric coordinates, "
+        "then pass the returned lat/lon to search_places or nearest_places."
+    ),
     to_tool_schema(
         SearchPlacesRequest,
         "search_places",

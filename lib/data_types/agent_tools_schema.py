@@ -113,6 +113,12 @@ class HeatmapRequest(BaseModel):
     legend: bool = Field(False, description="Show a legend overlay.")
 
 
+class GeocodeRequest(BaseModel):
+    """Convert a place name or address to lat/lon coordinates."""
+    location: str = Field(..., description="Place name or address, e.g. 'Republic Square, Yerevan'.")
+    city_hint: str = Field("", description="Optional city to narrow the search, e.g. 'Yerevan'.")
+
+
 # Helper function to convert Pydantic model to OpenAI tool schema
 def to_tool_schema(model_class: type[BaseModel], name: str, description: str) -> dict:
     """Convert Pydantic model to OpenAI-compatible tool schema."""
