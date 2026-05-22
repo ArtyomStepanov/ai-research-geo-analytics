@@ -91,7 +91,8 @@ def _tool_build_heatmap(args: dict[str, Any]) -> dict:
         st.session_state['agent_heatmap'] = {
             'points': points,
             'radius': radius,
-            'zoom_start': zoom_start
+            'zoom_start': zoom_start,
+            'args': dict(args),  # копия для sidebar
         }
     except Exception:
         pass  # Если запускается вне Streamlit (тесты), просто игнорируем
@@ -113,7 +114,7 @@ def _tool_geocode(args: dict[str, Any]) -> dict:
 
 def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
     """Calculate hex-grid opportunity map and return structured cells."""
-    
+
     cells = compute_opportunity_grid(
         category=args.get("category", "pharmacy"),
         hex_resolution=int(args.get("hex_resolution", 8)),
@@ -123,7 +124,10 @@ def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
     # Сохраняем в session_state, чтобы UI мог прочитать и отрисовать
     try:
         import streamlit as st
-        st.session_state['opportunity_grid'] = {'cells': cells}
+        st.session_state['opportunity_grid'] = {
+            'cells': cells,
+            'args': dict(args),  # копия аргументов для sidebar (read-only)
+        }
     except Exception:
         pass  # Игнорируем при запуске вне Streamlit (тесты/CLI)
 
