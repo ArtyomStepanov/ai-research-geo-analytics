@@ -37,6 +37,7 @@ from .tools import (
 
 from .prompts import SYSTEM_PROMPT
 from .tools_schema import TOOLS
+from .db import save_opportunity_grid
 
 load_dotenv()
 
@@ -115,11 +116,12 @@ def run(query: str, chat_id: str) -> str:
     memory = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
 
     memory.add_user_message(query)
+    memory.save()  # Persist user message immediately
+
     # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
-        memory.save()
         return _offline_route(query)
-    
+
     client, model = _llm_client_and_model()
 
     # Цикл tool calling: максимум 5 итераций, чтобы избежать бесконечного цикла
@@ -130,8 +132,8 @@ def run(query: str, chat_id: str) -> str:
         messages = memory.get_messages()
 
         response = client.chat.completions.create(
-            model=model, 
-            messages=messages, 
+            model=model,
+            messages=messages,
             tools=TOOLS,
             max_tokens=65536,
             tool_choice="auto",
@@ -150,19 +152,24 @@ def run(query: str, chat_id: str) -> str:
             name = call.function.name
             args = json.loads(call.function.arguments or "{}")
             impl = TOOL_IMPL.get(name)
-            
+
             if impl:
                 result = impl(args)
             else:
                 result = {"error": f"unknown tool '{name}'"}
                 #print(f"[WARN] Unknown tool: {name}", flush=True)
 
+            if name == "opportunity_grid" and isinstance(result, list):
+                save_opportunity_grid(chat_id, {"cells": result, "args": dict(args)})
+
             # Добавляем результат инструмента в память
             memory.add_tool_result(
-                call.id, 
+                call.id,
                 json.dumps(result, ensure_ascii=False, default=str)
             )
             #print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
+
+        memory.save()  # Persist after each complete tool-call iteration
 
     # Если достигли лимита итераций — просим LLM сформулировать ответ на основе накопленного контекста
     #print("[WARN] Max iterations reached, forcing final answer", flush=True)

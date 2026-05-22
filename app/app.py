@@ -28,7 +28,8 @@ for p in (str(ROOT), str(HERE)):
 
 import h3  # noqa: E402
 from agent.agent import run as run_agent  # noqa: E402
-from agent.memory import ConversationMemory  # noqa: E402
+from agent.db import init_db, load_chat_history, save_opportunity_grid, load_opportunity_grid  # noqa: E402
+from agent.memory import PersistedMemory  # noqa: E402
 from agent.prompts import SYSTEM_PROMPT  # noqa: E402
 
 from core_utils.coverage import compute_opportunity_grid, HEX_SIZE_REFERENCE  # noqa: E402
@@ -66,19 +67,51 @@ CATEGORIES = ["cafe", "restaurant", "pharmacy", "bar"]
 DEFAULT_HEX_RES = 8
 
 
+# --- DB-backed chat helpers -------------------------------------------------
+def _load_chat_log_from_db(chat_id: str) -> list[dict]:
+    """Load display-ready messages from DB (user + assistant text only)."""
+    history = load_chat_history(chat_id)
+    if not history:
+        return []
+    return [
+        {"role": m["role"], "content": m["content"]}
+        for m in history
+        if m["role"] in ("user", "assistant") and m.get("content")
+    ]
+
+
+def _restore_opportunity_grid(chat_id: str) -> None:
+    """Restore the last opportunity_grid from the dedicated DB column into session_state."""
+    grid_data = load_opportunity_grid(chat_id)
+    if grid_data:
+        st.session_state["opportunity_grid"] = grid_data
+
+
 # --- session state initialization ------------------------------------------
 def _init_state() -> None:
-    if "chat_log" not in st.session_state:
-        st.session_state["chat_log"] = []
+    init_db()  # Ensure table exists before any reads
+
     if "chat_id" not in st.session_state:
-        st.session_state["chat_id"] = str(uuid.uuid4())
+        url_chat_id = st.query_params.get("chat_id")
+        if url_chat_id and load_chat_history(url_chat_id):
+            # Restore existing session from URL
+            chat_id = url_chat_id
+        else:
+            # New session — write id to URL so the user can bookmark it
+            chat_id = str(uuid.uuid4())
+            st.query_params["chat_id"] = chat_id
+        st.session_state["chat_id"] = chat_id
+
+    if "chat_log" not in st.session_state:
+        st.session_state["chat_log"] = _load_chat_log_from_db(st.session_state["chat_id"])
     if "selected_category" not in st.session_state:
         st.session_state["selected_category"] = "pharmacy"
     if "pending_query" not in st.session_state:
         st.session_state["pending_query"] = None
     if "selected_hex" not in st.session_state:
-        # Карточка с метриками гекса, ожидающая решения пользователя
         st.session_state["selected_hex"] = None
+    if not st.session_state.get("opportunity_grid"):
+        _restore_opportunity_grid(st.session_state["chat_id"])
 
 
 _init_state()
@@ -234,12 +267,15 @@ def render_map_fragment() -> None:
 
 # --- chat panel -------------------------------------------------------------
 def _send_to_agent(query: str) -> None:
-    st.session_state["chat_log"].append({"role": "user", "content": query})
+    chat_id = st.session_state["chat_id"]
     try:
-        answer = run_agent(query, chat_id = st.session_state["chat_id"])
+        run_agent(query, chat_id=chat_id)
     except Exception as exc:  # noqa: BLE001
-        answer = f"⚠️ Agent error: {exc}"
-    st.session_state["chat_log"].append({"role": "assistant", "content": answer})
+        st.session_state["chat_log"].append({"role": "user", "content": query})
+        st.session_state["chat_log"].append({"role": "assistant", "content": f"⚠️ Agent error: {exc}"})
+        return
+    st.session_state["chat_log"] = _load_chat_log_from_db(chat_id)
+    _restore_opportunity_grid(chat_id)
 
 
 def render_hex_card() -> None:
@@ -335,6 +371,10 @@ def render_chat_panel() -> None:
     with top_right:
         st.write("")
         if st.button("🗑️ Clear", use_container_width=True):
+            # Start a brand-new session so the old one stays intact in DB
+            new_chat_id = str(uuid.uuid4())
+            st.session_state["chat_id"] = new_chat_id
+            st.query_params["chat_id"] = new_chat_id
             st.session_state["chat_log"] = []
             st.session_state.pop("opportunity_grid", None)
             st.session_state.pop("agent_heatmap", None)
@@ -345,11 +385,12 @@ def render_chat_panel() -> None:
     with st.expander("Quick actions", expanded=False):
         b1, b2 = st.columns(2)
         if b1.button("📍 Show opportunity grid", use_container_width=True):
+            chat_id = st.session_state["chat_id"]
             cat = st.session_state["selected_category"]
             cells = compute_opportunity_grid(
                 category=cat, hex_resolution=DEFAULT_HEX_RES
             )
-            st.session_state["opportunity_grid"] = {
+            grid_data = {
                 "cells": cells,
                 "args": {
                     "category": cat,
@@ -357,15 +398,18 @@ def render_chat_panel() -> None:
                     "demand_threshold": 0.0,
                 },
             }
-            st.session_state["chat_log"].append({
-                "role": "assistant",
-                "content": (
-                    f"Built opportunity grid for **{cat}** "
-                    f"({len(cells)} hex cells, "
-                    f"{sum(1 for c in cells if c['is_visible'])} visible). "
-                    f"Click a hex to see its metrics."
-                ),
-            })
+            st.session_state["opportunity_grid"] = grid_data
+            save_opportunity_grid(chat_id, grid_data)
+            msg_content = (
+                f"Built opportunity grid for **{cat}** "
+                f"({len(cells)} hex cells, "
+                f"{sum(1 for c in cells if c['is_visible'])} visible). "
+                f"Click a hex to see its metrics."
+            )
+            mem = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
+            mem.add_assistant_message(msg_content)
+            mem.save()
+            st.session_state["chat_log"] = _load_chat_log_from_db(chat_id)
             st.rerun()
 
         if b2.button("❓ Where to open?", use_container_width=True):

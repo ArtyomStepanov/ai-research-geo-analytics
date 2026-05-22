@@ -10,8 +10,6 @@ from typing import Any
 
 
 def _tool_search_places(args: dict[str, Any]) -> list[Place]:
-
-def _tool_search_places(args: dict[str, Any]) -> list[Place]:
     near = None
     if "near_lat" in args and "near_lon" in args:
         near = (float(args["near_lat"]), float(args["near_lon"]))

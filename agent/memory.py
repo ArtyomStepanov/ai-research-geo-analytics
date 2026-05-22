@@ -17,10 +17,21 @@ class ConversationMemory:
 
 
     def add_assistant_message(self, content: str, tool_calls: Optional[list] = None):
-        msg = {"role": "assistant", "content": content}
+        msg = {"role": "assistant", "content": content or ""}
         if tool_calls:
-            msg["tool_calls"] = tool_calls
+            msg["tool_calls"] = [
+                tc.model_dump() if hasattr(tc, "model_dump") else tc
+                for tc in tool_calls
+            ]
         self.history.append(msg)
+
+    def get_display_history(self) -> list[dict]:
+        """User + assistant text messages only — for chat UI rendering."""
+        return [
+            {"role": m["role"], "content": m["content"]}
+            for m in self.history
+            if m["role"] in ("user", "assistant") and m.get("content")
+        ]
 
 
     def add_tool_result(self, tool_call_id: str, content: str):
@@ -43,6 +54,7 @@ class ConversationMemory:
     def clear(self):
         """Очистить память, оставив только system prompt."""
         self.history = [{"role": "system", "content": self.system_prompt}]
+
 
 class PersistedMemory(ConversationMemory):
     """Расширенная память с автосохранением в SQLite."""
