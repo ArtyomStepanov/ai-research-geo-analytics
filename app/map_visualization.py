@@ -110,70 +110,78 @@ def opportunity_hex_map(
     zoom_start: int = 13,
     max_demand: float | None = None,
     min_demand: float | None = None,
-    color_metric: str = "demand_score",  # "demand_score" | "competitor_density" | "opportunity_ratio"
-    colormap: str = "RdYlGn_r",          # matplotlib colormap name; RdYlGn_r = green→yellow→red
+    color_metric: str = "opportunity_score",  # main B2B metric
+    colormap: str = "RdYlGn",                 # red=bad, green=good
     opacity_range: tuple[float, float] = (0.3, 0.65),
 ) -> folium.Map:
     """Отрисовать H3-сетку с градиентной заливкой.
-    
+
     Args:
-        cells: Список гексов из compute_opportunity_grid
-        zoom_start: Начальный зум карты
-        max_demand/min_demand: Границы нормализации (авто, если None)
-        color_metric: Поле для расчёта цвета: 
-            - "demand_score" → выше = "горячее" (зелёный→красный)
-            - "competitor_density" → выше = насыщеннее рынок (синий→красный)
-            - "opportunity_ratio" → demand / (competitor + 1) (универсальный)
-        colormap: Название matplotlib colormap: 
-            "YlOrRd", "RdYlGn", "Viridis", "Plasma", "coolwarm" и др.
-        opacity_range: (min_opacity, max_opacity) для видимых ячеек
+        cells: Список гексов из compute_opportunity_grid.
+        places: Конкуренты для отрисовки точками поверх гексов.
+        zoom_start: Начальный зум карты.
+        max_demand/min_demand: Границы нормализации (авто, если None).
+        color_metric: Поле для расчёта цвета:
+            - "opportunity_score" → главная B2B-метрика (demand - competition).
+              Высокая = хорошее место под новую точку. По умолчанию.
+            - "demand_score" → POI кроме конкурентов (прокси трафика).
+            - "competitor_density" → насыщенность рынка.
+        colormap: Название matplotlib colormap.
+            Для opportunity_score используй "RdYlGn" (красный→зелёный).
+            Для competitor_density — "RdYlGn_r" (зелёный→красный, т.к. высокая
+            конкуренция = плохо).
+        opacity_range: (min_opacity, max_opacity) для видимых ячеек.
     """
     if not cells:
         return folium.Map(location=(0, 0), zoom_start=2)
 
-    center = (cells[0]["center_lat"], cells[0]["center_lon"])
+    # Центр карты — медиана по видимым гексам, чтобы не перекосило одним выбросом
+    visible_cells = [c for c in cells if c.get("is_visible")] or cells
+    center = (
+        sum(c["center_lat"] for c in visible_cells) / len(visible_cells),
+        sum(c["center_lon"] for c in visible_cells) / len(visible_cells),
+    )
     m = folium.Map(location=center, zoom_start=zoom_start)
 
-    # Вычисляем метрику для цвета
-    values = []
-    for c in cells:
-        if color_metric == "opportunity_ratio":
-            # Отношение спроса к конкуренции (чем выше — тем лучше)
-            val = c["demand_score"] / (c["competitor_density"] + 1)
-        else:
-            val = c.get(color_metric, c["demand_score"])
-        values.append(val)
+    # Значения метрики для расчёта цвета
+    values = [c.get(color_metric, c.get("opportunity_score", 0)) for c in cells]
 
-    # Нормализация + настройка градиента
+    # Нормализация по ВИДИМЫМ ячейкам, чтобы выбросы из «контекстных»
+    # пустых гексов не сжимали шкалу
     visible_vals = [v for v, c in zip(values, cells) if c["is_visible"]]
     if not visible_vals:
         visible_vals = values
     min_val = min_demand if min_demand is not None else min(visible_vals)
     max_val = max_demand if max_demand is not None else max(visible_vals)
-    span = max_val - min_val + 1e-6  # защита от деления на 0
+    span = max_val - min_val + 1e-6
 
-    # Colormap из matplotlib (поддерживает 256 цветов)
     cmap = matplotlib.colormaps[colormap]
     norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
 
     for c, val in zip(cells, values):
-        # Прозрачные гексы (ниже порога спроса) — не рисуем заливку, только контур
+        # Невидимые гексы (контекст вокруг): тонкий серый контур
         if not c["is_visible"]:
             folium.Polygon(
                 locations=[list(pt) for pt in c["boundary"]],
                 color="#888888",
                 weight=1,
                 fill=True,
-                fill_opacity=0.1,  # почти прозрачный
-                popup=f"Low demand<br>{color_metric}: {val:.2f}",
+                fill_opacity=0.08,
+                popup=(
+                    f"<b>Empty / low activity</b><br>"
+                    f"Total POI: {c['total_places']}<br>"
+                    f"Opportunity: {c.get('opportunity_score', 0):.2f}"
+                ),
             ).add_to(m)
             continue
 
-        # Видимые гексы — градиентная заливка
+        # Видимые гексы: градиент
         normalized = (val - min_val) / span
-        rgba = cmap(norm(val))  # [R, G, B, A]
+        rgba = cmap(norm(val))
         color = mcolors.to_hex(rgba[:3])
-        opacity = opacity_range[0] + normalized * (opacity_range[1] - opacity_range[0])
+        opacity = opacity_range[0] + normalized * (
+            opacity_range[1] - opacity_range[0]
+        )
 
         folium.Polygon(
             locations=[list(pt) for pt in c["boundary"]],
@@ -182,12 +190,13 @@ def opportunity_hex_map(
             fill=True,
             fill_opacity=opacity,
             popup=(
-                f"<b>{color_metric.replace('_', ' ').title()}</b>: {val:.2f}<br>"
-                f"Demand: {c['demand_score']}<br>"
-                f"Competition: {c['competitor_density']}<br>"
+                f"<b>Opportunity</b>: {c.get('opportunity_score', 0):.2f}<br>"
+                f"Demand (other POI): {c['demand_score']}<br>"
+                f"Competitors: {c.get('competitor_count', 0)} "
+                f"(avg ⭐ {c.get('competitor_avg_rating', 0):.1f})<br>"
                 f"Total POI: {c['total_places']}"
             ),
         ).add_to(m)
-    
+
     _add_places(places, m)
     return m
