@@ -112,6 +112,8 @@ def _init_state() -> None:
         st.session_state["selected_hex"] = None
     if not st.session_state.get("opportunity_grid"):
         _restore_opportunity_grid(st.session_state["chat_id"])
+        if st.session_state.get("opportunity_grid"):
+            st.rerun()
 
 
 _init_state()

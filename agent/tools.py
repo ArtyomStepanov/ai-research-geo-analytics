@@ -122,13 +122,14 @@ def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
         demand_threshold=float(args.get("demand_threshold", 0.0)),
         competitor_rating_weight=float(args.get("competitor_rating_weight", 1.0)),
     )
-    # Сохраняем в session_state, чтобы UI мог прочитать и отрисовать
     try:
         import streamlit as st
-        st.session_state['opportunity_grid'] = {
-            'cells': cells,
-            'args': dict(args),  # копия аргументов для sidebar (read-only)
-        }
+        from .db import save_opportunity_grid
+        chat_id = st.session_state.get('chat_id')
+        grid_data = {'cells': cells, 'args': dict(args)}
+        st.session_state['opportunity_grid'] = grid_data
+        if chat_id:
+            save_opportunity_grid(chat_id, grid_data)
     except Exception:
         pass  # Игнорируем при запуске вне Streamlit (тесты/CLI)
 
