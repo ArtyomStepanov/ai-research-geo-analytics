@@ -99,7 +99,7 @@ def _llm_client_and_model():
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
-def run(query: str, chat_id: str, memory: Optional[ConversationMemory] = None) -> str:
+def run(query: str, chat_id: str) -> str:
     """Run agent with memory and multi-step tool calling.
     Args:
         query: User query
@@ -112,8 +112,7 @@ def run(query: str, chat_id: str, memory: Optional[ConversationMemory] = None) -
     init_db()  # Создаём таблицу при первом запуске
 
     # Используем PersistedMemory, если не передан кастомный объект
-    if memory is None:
-        memory = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
+    memory = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
 
     memory.add_user_message(query)
     # Оффлайн-режим (без API)
@@ -180,7 +179,7 @@ def run(query: str, chat_id: str, memory: Optional[ConversationMemory] = None) -
 
 def main() -> None:    
     # Создаём память на всю сессию (сохраняется между запросами в рамках одного запуска)
-    memory = ConversationMemory(SYSTEM_PROMPT)
+    memory = PersistedMemory(SYSTEM_PROMPT)
 
     query = " ".join(sys.argv[1:])
 
