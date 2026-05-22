@@ -20,7 +20,8 @@ from core_utils.search import search_places
 
 from typing import Optional
 
-from .memory import ConversationMemory
+from .memory import ConversationMemory, PersistedMemory
+from .db import init_db
 
 from .tools import (
     _tool_opportunity_grid,
@@ -98,7 +99,7 @@ def _llm_client_and_model():
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
-def run(query: str, memory: Optional[ConversationMemory] = None) -> str:
+def run(query: str, chat_id: str, memory: Optional[ConversationMemory] = None) -> str:
     """Run agent with memory and multi-step tool calling.
     Args:
         query: User query
@@ -108,11 +109,16 @@ def run(query: str, memory: Optional[ConversationMemory] = None) -> str:
         Final assistant response as string.
     """
     # Добавляем запрос пользователя в память
+    init_db()  # Создаём таблицу при первом запуске
+
+    # Используем PersistedMemory, если не передан кастомный объект
     if memory is None:
-        memory = ConversationMemory(SYSTEM_PROMPT)   # новый объект на каждый вызов без memory
+        memory = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
+
     memory.add_user_message(query)
     # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
+        memory.save()
         return _offline_route(query)
     
     client, model = _llm_client_and_model()
@@ -136,6 +142,7 @@ def run(query: str, memory: Optional[ConversationMemory] = None) -> str:
 
         if not msg.tool_calls:
             memory.add_assistant_message(msg.content or "")
+            memory.save()
             return msg.content or ""
 
         memory.add_assistant_message(msg.content, msg.tool_calls)
@@ -167,6 +174,7 @@ def run(query: str, memory: Optional[ConversationMemory] = None) -> str:
         model=model,
         messages=memory.get_messages()
     )
+    memory.save()
     return final.choices[0].message.content or ""
 
 
