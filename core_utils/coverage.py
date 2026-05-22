@@ -16,42 +16,61 @@ HEX_SIZE_REFERENCE = {
 
 def compute_opportunity_grid(
     category: str = "pharmacy",
-    hex_resolution: int = 5,
+    hex_resolution: int = 8,
     csv_path: Optional[str] = None,
     demand_threshold: float = 0.0,
-    competitor_rating_weight: float = 1.0,
+    competitor_rating_weight: float = 0.5,
 ) -> list[dict]:
     """Рассчитать гексагональную сетку спроса и конкуренции.
 
+    Метрики (на гекс):
+        total_places          : общее число POI в гексе (трафик/жизнь района)
+        competitor_count      : число конкурентов целевой категории
+        competitor_density    : competitor_count, скорректированное на средний рейтинг
+                                (высокий рейтинг конкурентов = они сильнее)
+        demand_score          : total_places - competitor_count
+                                (POI кроме самих конкурентов = «прокси спроса»)
+        opportunity_score     : demand_score - competitor_density
+                                (главная метрика: высокая = хорошее место под новую точку)
+        is_visible            : True, если в гексе вообще есть POI и opportunity выше порога
+
     Args:
-        category: Тип бизнеса для анализа (используется как фильтр конкурентов).
+        category: Тип бизнеса для анализа (фильтр конкурентов).
         hex_resolution: H3 resolution (0-15). 8 ~ городской квартал (0.74 км ребро).
         csv_path: Путь к датасету POI.
-        demand_threshold: Порог видимости. Ячейки с demand_score < threshold будут прозрачными.
-        competitor_rating_weight: Множитель влияния рейтинга конкурентов на насыщение.
+        demand_threshold: Минимальный opportunity_score для is_visible=True.
+        competitor_rating_weight: Множитель влияния рейтинга на competitor_density.
+            0.0 = качество конкурентов игнорируется, считается только их число.
+            0.5 = умеренный учёт (рекомендуется).
 
     Returns:
-        Список диктов: hex_id, center_lat/lon, boundary, demand_score, 
-        competitor_density, total_places, is_visible
+        Список диктов: hex_id, center_lat/lon, boundary, demand_score,
+        competitor_density, competitor_count, opportunity_score,
+        total_places, is_visible.
     """
     df = _load_places(csv_path)
-    if not {"lat", "lon", "amenity"}.issubset(df.columns):
-        raise ValueError(f"Dataset must contain lat, lon, amenity columns")
 
     # Привязка точек к H3-гексам
-    df["hex_id"] = df.apply(lambda r: h3.latlng_to_cell(r["lat"], r["lon"], hex_resolution), axis=1)
+    df["hex_id"] = df.apply(
+        lambda r: h3.latlng_to_cell(r["lat"], r["lon"], hex_resolution), axis=1
+    )
 
-    # Агрегация: общее кол-во POI + специфика по категории
+    # Агрегация: общее количество POI в гексе
     total_agg = df.groupby("hex_id").agg(
         total_places=("lat", "count"),
-        avg_rating_all=("rating", "mean"),
     ).reset_index()
 
     # Агрегация только по конкурентам целевой категории
-    comp_df = df[df["amenity"] == category].groupby("hex_id").agg(
-        competitor_count=("lat", "count"),
-        competitor_weighted_rating=("rating", "sum"),
-    ).reset_index()
+    comp_df = df[df["amenity"] == category]
+    if not comp_df.empty:
+        comp_agg = comp_df.groupby("hex_id").agg(
+            competitor_count=("lat", "count"),
+            competitor_avg_rating=("rating", "mean"),
+        ).reset_index()
+    else:
+        comp_agg = pd.DataFrame(
+            columns=["hex_id", "competitor_count", "competitor_avg_rating"]
+        )
 
     # Генерация полной сетки по bounding box всех POI
     margin = 0.02  # ~2 км отступ по краям
@@ -61,29 +80,48 @@ def compute_opportunity_grid(
         (df["lat"].max() + margin, df["lon"].max() + margin),
         (df["lat"].min() - margin, df["lon"].max() + margin),
     ])
-    full_grid = pd.DataFrame({"hex_id": list(h3.polygon_to_cells(bbox_poly, hex_resolution))})
+    full_grid = pd.DataFrame(
+        {"hex_id": list(h3.polygon_to_cells(bbox_poly, hex_resolution))}
+    )
 
     # Слияние полной сетки с агрегацией (пустые гексы получают 0)
     agg = full_grid.merge(total_agg, on="hex_id", how="left")
-    agg = agg.merge(comp_df, on="hex_id", how="left")
+    agg = agg.merge(comp_agg, on="hex_id", how="left")
     agg["total_places"] = agg["total_places"].fillna(0).astype(int)
     agg["competitor_count"] = agg["competitor_count"].fillna(0).astype(int)
-    agg["competitor_weighted_rating"] = agg["competitor_weighted_rating"].fillna(0.0)
-    agg["avg_rating_all"] = agg["avg_rating_all"].fillna(0.0)
+    # Если рейтинга нет (нет конкурентов или у них пусто) — берём нейтральные 3.0,
+    # чтобы корректировка качества не давала ложного бонуса/штрафа.
+    agg["competitor_avg_rating"] = agg["competitor_avg_rating"].fillna(3.0)
 
-    # Расчёт метрик TODO: улучшить
-    agg["competitor_density"] = agg["competitor_weighted_rating"] * competitor_rating_weight
-    agg["demand_score"] = agg["total_places"] - agg["competitor_density"]
+    # --- Метрики --------------------------------------------------------
+    # Конкуренция: количество + корректировка на качество.
+    # Если средний рейтинг конкурентов > 3 → они сильнее → density выше.
+    # Если < 3 → слабее → density ниже. Шкала: 0.5 × (rating - 3) × count.
+    agg["competitor_density"] = (
+        agg["competitor_count"]
+        + competitor_rating_weight
+        * (agg["competitor_avg_rating"] - 3.0)
+        * agg["competitor_count"]
+    )
 
-    # Классификация видимости: demand_score выше порога (пустые гексы всегда прозрачны)
-    agg["is_visible"] = agg["demand_score"] >= demand_threshold
+    # Спрос: общая активность района МИНУС сами конкуренты
+    # (они уже учтены в competitor_density, не считаем их дважды).
+    agg["demand_score"] = (agg["total_places"] - agg["competitor_count"]).clip(lower=0)
 
-    # Пространственный фильтр: убираем изолированные прозрачные гексы
+    # Главная метрика: возможность открыть новую точку
+    agg["opportunity_score"] = agg["demand_score"] - agg["competitor_density"]
+
+    # Видимость: только гексы, где есть POI И opportunity_score >= threshold
+    agg["is_visible"] = (
+        (agg["total_places"] > 0) & (agg["opportunity_score"] >= demand_threshold)
+    )
+
+    # Пространственный фильтр: убираем изолированные пустые гексы,
+    # оставляем видимые + их 1-hop соседей для контекста
     visible_hexes = set(agg[agg["is_visible"]]["hex_id"])
     if not visible_hexes:
         return []
 
-    # Собираем все соседей видимых ячеек (1-hop ring)
     border_hexes = set()
     for h in visible_hexes:
         try:
@@ -91,7 +129,6 @@ def compute_opportunity_grid(
         except Exception:
             pass
 
-    # Оставляем: видимые или прозрачные, но граничащие с видимыми
     valid_hexes = visible_hexes | (set(agg["hex_id"]) & border_hexes)
     agg = agg[agg["hex_id"].isin(valid_hexes)]
 
@@ -109,6 +146,9 @@ def compute_opportunity_grid(
             "boundary": boundary,
             "demand_score": round(float(row["demand_score"]), 2),
             "competitor_density": round(float(row["competitor_density"]), 2),
+            "competitor_count": int(row["competitor_count"]),
+            "competitor_avg_rating": round(float(row["competitor_avg_rating"]), 2),
+            "opportunity_score": round(float(row["opportunity_score"]), 2),
             "total_places": int(row["total_places"]),
             "is_visible": bool(row["is_visible"]),
         })
