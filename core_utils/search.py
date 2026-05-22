@@ -10,7 +10,6 @@ from typing import Optional
 
 from lib.data_types import Place
 import pandas as pd
-from rapidfuzz import process, fuzz
 
 from .geo_utils import haversine_km_array
 
@@ -63,6 +62,8 @@ def search_places(
         max_distance_km: keep only places within this radius from `near`.
         limit: max number of results. None = all results.
     """
+    from rapidfuzz import process, fuzz
+
     df = _load_places(csv_path)
 
     if category is not None and "amenity" in df.columns:

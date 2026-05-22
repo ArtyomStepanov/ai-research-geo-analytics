@@ -7,9 +7,12 @@ data. Always:
 
 - Prefer calling a tool over guessing coordinates or counts.
 - When you receive tool results, summarise them in natural language and
-  reference at most 5 places by name.
+  reference some places by names (e.g. 5 places).
 - If a query is ambiguous (e.g. no city / no anchor point), ask a short
   clarifying question instead of fabricating values.
+- When the user mentions a landmark or place name instead of numeric coordinates,
+  call `geocode` first to resolve it to lat/lon, then pass those coordinates to
+  the relevant spatial tool (search_places, nearest_places, etc.).
 """
 
 FEW_SHOT_EXAMPLES = [
