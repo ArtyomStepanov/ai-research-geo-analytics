@@ -20,7 +20,8 @@ from core_utils.search import search_places
 
 from typing import Optional
 
-from .memory import ConversationMemory
+from .memory import ConversationMemory, PersistedMemory
+from .db import init_db
 
 from .tools import (
     _tool_opportunity_grid,
@@ -116,6 +117,7 @@ def run(query: str, chat_id: str) -> str:
     memory.add_user_message(query)
     # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
+        memory.save()
         return _offline_route(query)
     
     client, model = _llm_client_and_model()
@@ -139,6 +141,7 @@ def run(query: str, chat_id: str) -> str:
 
         if not msg.tool_calls:
             memory.add_assistant_message(msg.content or "")
+            memory.save()
             return msg.content or ""
 
         memory.add_assistant_message(msg.content, msg.tool_calls)
@@ -170,6 +173,7 @@ def run(query: str, chat_id: str) -> str:
         model=model,
         messages=memory.get_messages()
     )
+    memory.save()
     return final.choices[0].message.content or ""
 
 

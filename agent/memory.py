@@ -1,6 +1,6 @@
-"""Simple conversation memory for the agent."""
+"""Simple conversation memory with Database for the agent."""
 from typing import Optional
-
+from .db import load_chat_history, save_chat_history
 
 class ConversationMemory:
     """Хранит историю диалога и контекст между шагами."""
@@ -43,3 +43,22 @@ class ConversationMemory:
     def clear(self):
         """Очистить память, оставив только system prompt."""
         self.history = [{"role": "system", "content": self.system_prompt}]
+
+class PersistedMemory(ConversationMemory):
+    """Расширенная память с автосохранением в SQLite."""
+    def __init__(self, chat_id: str, system_prompt: str, max_turns: int = 10):
+        super().__init__(system_prompt, max_turns)
+        self.chat_id = chat_id
+        self._load_from_db()
+
+    def _load_from_db(self):
+        db_history = load_chat_history(self.chat_id)
+        if db_history:
+            self.history = db_history
+            # Гарантируем, что system prompt всегда первый
+            if not self.history or self.history[0].get("role") != "system":
+                self.history.insert(0, {"role": "system", "content": self.system_prompt})
+
+    def save(self):
+        """Сохраняет полную историю в БД."""
+        save_chat_history(self.chat_id, self.history)
