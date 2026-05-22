@@ -10,3 +10,6 @@ data/processed/*
 !data/processed/.gitkeep
 .DS_Store
 cache
+github
+github.pub
+geo_chat.db*

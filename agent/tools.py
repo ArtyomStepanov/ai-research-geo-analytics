@@ -1,12 +1,15 @@
 from core_utils.coverage import compute_opportunity_grid
 from core_utils.ranking import rank_by_distance, rank_by_score
 from core_utils.search import nearest_places, search_by_name, search_places
+from core_utils.search import nearest_places, search_by_name, search_places
 from core_utils.filtering import filter_by_category, filter_by_rating
 from core_utils.geo_utils import compute_distance, _coerce_points, geocode
 from lib.data_types import Place
 
 from typing import Any
 
+
+def _tool_search_places(args: dict[str, Any]) -> list[Place]:
 
 def _tool_search_places(args: dict[str, Any]) -> list[Place]:
     near = None

@@ -1,5 +1,6 @@
 """OpenAI-compatible tool schema definitions for the agent."""
 
+
 from lib.data_types.agent_tools_schema import to_tool_schema
 from lib.data_types.agent_tools_schema import (
     SearchPlacesRequest,
@@ -69,3 +70,4 @@ TOOLS = [
         "Do NOT use for coverage or opportunity analysis — use opportunity_grid instead."
     ),
 ]
+
