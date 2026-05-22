@@ -38,6 +38,7 @@ from map_visualization import opportunity_hex_map  # noqa: E402
 
 from streamlit_folium import st_folium
 import folium  # noqa: E402
+import uuid
 
 
 # --- page config ------------------------------------------------------------
@@ -67,10 +68,10 @@ DEFAULT_HEX_RES = 8
 
 # --- session state initialization ------------------------------------------
 def _init_state() -> None:
-    if "memory" not in st.session_state:
-        st.session_state["memory"] = ConversationMemory(SYSTEM_PROMPT)
     if "chat_log" not in st.session_state:
         st.session_state["chat_log"] = []
+    if "chat_id" not in st.session_state:
+        st.session_state["chat_id"] = str(uuid.uuid4())
     if "selected_category" not in st.session_state:
         st.session_state["selected_category"] = "pharmacy"
     if "pending_query" not in st.session_state:
@@ -175,21 +176,6 @@ def render_sidebar() -> None:
             st.caption(f"Points: {len(hm.get('points', []))}")
             st.divider()
 
-        # --- Conversation memory ------------------------------------------
-        mem: ConversationMemory = st.session_state["memory"]
-        n_msgs = max(len(mem.history) - 1, 0)
-        n_user = sum(1 for m in mem.history if m.get("role") == "user")
-        n_tool = sum(1 for m in mem.history if m.get("role") == "tool")
-
-        st.markdown("**Conversation memory**")
-        col_x, col_y, col_z = st.columns(3)
-        col_x.metric("Messages", n_msgs)
-        col_y.metric("Queries", n_user)
-        col_z.metric("Tool calls", n_tool)
-
-        st.caption(f"Window: last {mem.max_turns} turns")
-
-        st.divider()
 
         st.markdown("**Map target category**")
         st.markdown(f"🎯 `{st.session_state['selected_category']}`")
@@ -250,7 +236,7 @@ def render_map_fragment() -> None:
 def _send_to_agent(query: str) -> None:
     st.session_state["chat_log"].append({"role": "user", "content": query})
     try:
-        answer = run_agent(query, memory=st.session_state["memory"])
+        answer = run_agent(query, chat_id = st.session_state["chat_id"])
     except Exception as exc:  # noqa: BLE001
         answer = f"⚠️ Agent error: {exc}"
     st.session_state["chat_log"].append({"role": "assistant", "content": answer})
@@ -350,7 +336,6 @@ def render_chat_panel() -> None:
         st.write("")
         if st.button("🗑️ Clear", use_container_width=True):
             st.session_state["chat_log"] = []
-            st.session_state["memory"].clear()
             st.session_state.pop("opportunity_grid", None)
             st.session_state.pop("agent_heatmap", None)
             st.session_state.pop("_last_click_handled", None)
