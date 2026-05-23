@@ -1,15 +1,16 @@
-from core_utils.coverage import compute_opportunity_grid
-from core_utils.ranking import rank_by_distance, rank_by_score
-from core_utils.search import nearest_places, search_by_name, search_places
-from core_utils.search import nearest_places, search_by_name, search_places
-from core_utils.filtering import filter_by_category, filter_by_rating
-from core_utils.geo_utils import compute_distance, _coerce_points, geocode
-from lib.data_types import Place
+from __future__ import annotations
 
 from typing import Any
 
+import h3
 
-def _tool_search_places(args: dict[str, Any]) -> list[Place]:
+from core_utils.coverage import compute_opportunity_grid
+from core_utils.filtering import filter_by_category, filter_by_rating
+from core_utils.geo_utils import compute_distance, _coerce_points, geocode
+from core_utils.ranking import rank_by_distance, rank_by_score
+from core_utils.search import nearest_places, search_by_name, search_places
+from lib.data_types import Place, Hex
+
 
 def _tool_search_places(args: dict[str, Any]) -> list[Place]:
     near = None
@@ -115,7 +116,44 @@ def _tool_geocode(args: dict[str, Any]) -> dict:
     return {"lat": lat, "lon": lon, "location": location}
 
 
-def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
+def _tool_nearest_hexes(args: dict[str, Any]) -> dict:
+    """Return a hex and its ring-neighbours from the opportunity grid."""
+    hex_id = args.get("hex_id", "").strip()
+    radius = int(args.get("radius", 1))
+
+    try:
+        import streamlit as st
+        opp = st.session_state.get("opportunity_grid")
+    except Exception:
+        opp = None
+
+    if not opp or not opp.get("cells"):
+        return {"error": "Opportunity grid not loaded. Run opportunity_grid first."}
+    if not hex_id:
+        return {"error": "hex_id is required."}
+
+    cells_by_id = {c.hex_id: c for c in opp["cells"]}
+
+    def _slim(c: Hex) -> dict:
+        return c.model_dump(exclude={"boundary"})
+
+    target_cell = cells_by_id.get(hex_id)
+    neighbors = [
+        _slim(cells_by_id[h])
+        for h in h3.grid_disk(hex_id, radius)
+        if h in cells_by_id and h != hex_id
+    ]
+
+    return {
+        "target_hex": hex_id,
+        "target_in_grid": target_cell is not None,
+        "target_cell": _slim(target_cell) if target_cell else None,
+        "radius": radius,
+        "neighbors": neighbors,
+    }
+
+
+def _tool_opportunity_grid(args: dict[str, Any]) -> list[Hex]:
     """Calculate hex-grid opportunity map and return structured cells."""
 
     cells = compute_opportunity_grid(
@@ -124,13 +162,14 @@ def _tool_opportunity_grid(args: dict[str, Any]) -> list[dict]:
         demand_threshold=float(args.get("demand_threshold", 0.0)),
         competitor_rating_weight=float(args.get("competitor_rating_weight", 1.0)),
     )
-    # Сохраняем в session_state, чтобы UI мог прочитать и отрисовать
     try:
         import streamlit as st
-        st.session_state['opportunity_grid'] = {
-            'cells': cells,
-            'args': dict(args),  # копия аргументов для sidebar (read-only)
-        }
+        from .db import save_opportunity_grid
+        chat_id = st.session_state.get('chat_id')
+        grid_data = {'cells': cells, 'args': dict(args)}
+        st.session_state['opportunity_grid'] = grid_data
+        if chat_id:
+            save_opportunity_grid(chat_id, {'cells': [c.model_dump() for c in cells], 'args': dict(args)})
     except Exception:
         pass  # Игнорируем при запуске вне Streamlit (тесты/CLI)
 

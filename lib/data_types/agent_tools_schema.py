@@ -1,6 +1,10 @@
 """Pydantic models for OpenAI tool schemas."""
+from __future__ import annotations
+
+from typing import Literal
+
 from pydantic import BaseModel, Field
-from typing import Optional, Literal, List
+
 from lib.data_types import Place
 
 class SearchPlacesRequest(BaseModel):
@@ -9,12 +13,12 @@ class SearchPlacesRequest(BaseModel):
         default_factory=list,
         description="OSM amenity tags, e.g. ['cafe','restaurant']. Empty = any.",
     )
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None, description="Substring/fuzzy of amenity name, e.g. 'Starbucks'."
     )
-    near_lat: Optional[float] = Field(None, description="Anchor latitude.")
-    near_lon: Optional[float] = Field(None, description="Anchor longitude.")
-    max_distance_km: Optional[float] = Field(
+    near_lat: float | None = Field(None, description="Anchor latitude.")
+    near_lon: float | None = Field(None, description="Anchor longitude.")
+    max_distance_km: float | None = Field(
         None, description="Keep only places within this radius of the anchor."
     )
     limit: int = Field(10, ge=1, description="Max results.")
@@ -33,13 +37,13 @@ class NearestPlacesRequest(BaseModel):
 class SearchByNameRequest(BaseModel):
     """Search amenities by name. `name` is REQUIRED."""
     name: str = Field(..., description="Amenity name to fuzzy-match (required).")
-    near_lat: Optional[float] = Field(None, description="Optional anchor lat.")
-    near_lon: Optional[float] = Field(None, description="Optional anchor lon.")
+    near_lat: float | None = Field(None, description="Optional anchor lat.")
+    near_lon: float | None = Field(None, description="Optional anchor lon.")
 
 
 class RankPlacesRequest(BaseModel):
     """Rank places returned by a previous search tool."""
-    places: List[Place] = Field(
+    places: list[Place] = Field(
         ...,
         description="Output list from a previous search/filter tool. "
                     "Pass it through unchanged; do NOT invent entries.",
@@ -57,6 +61,13 @@ class UnderservedAreasRequest(BaseModel):
                     "with search tools (one concept = one type everywhere).",
     )
     top_k: int = Field(10, ge=1, description="How many top cells to return.")
+
+
+class NearestHexesRequest(BaseModel):
+    """Retrieve a hex and its neighbourhood from the opportunity grid."""
+    hex_id: str = Field(..., description="H3 hex cell identifier to analyse.")
+    radius: int = Field(1, ge=0, le=3,
+                        description="Ring radius (0=target only, 1=target+6 neighbours).")
 
 
 class OpportunityGridRequest(BaseModel):
@@ -81,31 +92,31 @@ class OpportunityGridRequest(BaseModel):
 
 class FilterRequest(BaseModel):
     """Filter places returned by a previous search tool."""
-    places: List[Place] = Field(
+    places: list[Place] = Field(
         ..., description="Output from a previous tool; pass unchanged."
     )
     strategy: Literal["category", "rating"] = Field(
         "rating", description="Filter mode."
     )
-    category: Optional[list[str]] = Field(
+    category: list[str] | None = Field(
         None, description="Required if strategy='category'. List of amenity tags."
     )
-    min_rating: Optional[float] = Field(
+    min_rating: float | None = Field(
         None, ge=0, le=5, description="Required if strategy='rating'."
     )
 
 
 class DistanceRequest(BaseModel):
     """Great-circle distance between two [lat, lon] points, in km."""
-    p1: List[float] = Field(..., min_length=2, max_length=2,
+    p1: list[float] = Field(..., min_length=2, max_length=2,
                             description="[lat, lon] of first point.")
-    p2: List[float] = Field(..., min_length=2, max_length=2,
+    p2: list[float] = Field(..., min_length=2, max_length=2,
                             description="[lat, lon] of second point.")
 
 
 class HeatmapRequest(BaseModel):
     """Build an HTML heat map from weighted points; returns a file path."""
-    points: List[List[float]] = Field(
+    points: list[list[float]] = Field(
         ...,
         description="List of [lat, lon] or [lat, lon, weight]. Min 1 point.",
     )

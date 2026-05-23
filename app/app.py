@@ -28,12 +28,13 @@ for p in (str(ROOT), str(HERE)):
 
 import h3  # noqa: E402
 from agent.agent import run as run_agent  # noqa: E402
-from agent.memory import ConversationMemory  # noqa: E402
+from agent.db import init_db, load_chat_history, save_opportunity_grid, load_opportunity_grid  # noqa: E402
+from agent.memory import PersistedMemory  # noqa: E402
 from agent.prompts import SYSTEM_PROMPT  # noqa: E402
 
 from core_utils.coverage import compute_opportunity_grid, HEX_SIZE_REFERENCE  # noqa: E402
 from core_utils.search import search_places  # noqa: E402
-from lib.data_types import Place  # noqa: E402
+from lib.data_types import Place, Hex  # noqa: E402
 from map_visualization import opportunity_hex_map  # noqa: E402
 
 from streamlit_folium import st_folium
@@ -66,26 +67,61 @@ CATEGORIES = ["cafe", "restaurant", "pharmacy", "bar"]
 DEFAULT_HEX_RES = 8
 
 
+# --- DB-backed chat helpers -------------------------------------------------
+def _load_chat_log_from_db(chat_id: str) -> list[dict]:
+    """Load display-ready messages from DB (user + assistant text only)."""
+    history = load_chat_history(chat_id)
+    if not history:
+        return []
+    return [
+        {"role": m["role"], "content": m["content"]}
+        for m in history
+        if m["role"] in ("user", "assistant") and m.get("content")
+    ]
+
+
+def _restore_opportunity_grid(chat_id: str) -> None:
+    """Restore the last opportunity_grid from the dedicated DB column into session_state."""
+    grid_data = load_opportunity_grid(chat_id)
+    if grid_data:
+        grid_data['cells'] = [Hex(**c) for c in grid_data['cells']]
+        st.session_state["opportunity_grid"] = grid_data
+
+
 # --- session state initialization ------------------------------------------
 def _init_state() -> None:
-    if "chat_log" not in st.session_state:
-        st.session_state["chat_log"] = []
+    init_db()  # Ensure table exists before any reads
+
     if "chat_id" not in st.session_state:
-        st.session_state["chat_id"] = str(uuid.uuid4())
+        url_chat_id = st.query_params.get("chat_id")
+        if url_chat_id and load_chat_history(url_chat_id):
+            # Restore existing session from URL
+            chat_id = url_chat_id
+        else:
+            # New session — write id to URL so the user can bookmark it
+            chat_id = str(uuid.uuid4())
+            st.query_params["chat_id"] = chat_id
+        st.session_state["chat_id"] = chat_id
+
+    if "chat_log" not in st.session_state:
+        st.session_state["chat_log"] = _load_chat_log_from_db(st.session_state["chat_id"])
     if "selected_category" not in st.session_state:
         st.session_state["selected_category"] = "pharmacy"
     if "pending_query" not in st.session_state:
         st.session_state["pending_query"] = None
     if "selected_hex" not in st.session_state:
-        # Карточка с метриками гекса, ожидающая решения пользователя
         st.session_state["selected_hex"] = None
+    if not st.session_state.get("opportunity_grid"):
+        _restore_opportunity_grid(st.session_state["chat_id"])
+        if st.session_state.get("opportunity_grid"):
+            st.rerun()
 
 
 _init_state()
 
 
 # --- helpers ----------------------------------------------------------------
-def _find_hex_by_click(lat: float, lng: float) -> dict | None:
+def _find_hex_by_click(lat: float, lng: float) -> Hex | None:
     """Найти гекс из текущей сетки по координатам клика.
 
     Используем тот же hex_resolution, что был при построении: считаем
@@ -105,25 +141,27 @@ def _find_hex_by_click(lat: float, lng: float) -> dict | None:
         return None
 
     for cell in opp["cells"]:
-        if cell["hex_id"] == target_hex_id:
+        if cell.hex_id == target_hex_id:
             return cell
     return None
 
 
-def _format_hex_query(cell: dict, category: str) -> str:
+def _format_hex_query(cell: Hex, category: str) -> str:
     """Сформировать обогащённый запрос агенту по метрикам гекса."""
     return (
-        f"Analyse the area around hex {cell['hex_id']} "
-        f"(center: lat={cell['center_lat']:.5f}, lon={cell['center_lon']:.5f}) "
+        f"Analyse the area around hex {cell.hex_id} "
+        f"(center: lat={cell.center_lat:.5f}, lon={cell.center_lon:.5f}) "
         f"for opening a new {category}.\n\n"
         f"Hex metrics:\n"
-        f"- Opportunity score: {cell.get('opportunity_score', 0):.2f}\n"
-        f"- Demand (other POI): {cell['demand_score']}\n"
-        f"- Existing {category} competitors: {cell.get('competitor_count', 0)} "
-        f"(avg rating {cell.get('competitor_avg_rating', 0):.1f})\n"
-        f"- Total POI in hex: {cell['total_places']}\n\n"
-        f"Use nearest_places to list real competitors in/near this hex and "
-        f"give a verdict on whether it is a good location."
+        f"- Opportunity score: {cell.opportunity_score:.2f}\n"
+        f"- Demand (other POI): {cell.demand_score}\n"
+        f"- Existing {category} competitors: {cell.competitor_count} "
+        f"(avg rating {cell.competitor_avg_rating:.1f})\n"
+        f"- Total POI in hex: {cell.total_places}\n\n"
+        f"Call nearest_hexes(hex_id='{cell.hex_id}', radius=1) to get neighbourhood "
+        f"context (includes row/col grid positions of each hex), "
+        f"then nearest_places for real competitors near the hex centre, "
+        f"and give a verdict on whether it is a good location."
     )
 
 
@@ -150,7 +188,7 @@ def render_sidebar() -> None:
             resolution = args.get("hex_resolution", DEFAULT_HEX_RES)
             threshold = args.get("demand_threshold", 0.0)
             n_cells = len(opp["cells"])
-            n_visible = sum(1 for c in opp["cells"] if c.get("is_visible"))
+            n_visible = sum(1 for c in opp["cells"] if c.is_visible)
 
             st.markdown(f"**Opportunity grid** · `{category}`")
             col_a, col_b = st.columns(2)
@@ -234,12 +272,15 @@ def render_map_fragment() -> None:
 
 # --- chat panel -------------------------------------------------------------
 def _send_to_agent(query: str) -> None:
-    st.session_state["chat_log"].append({"role": "user", "content": query})
+    chat_id = st.session_state["chat_id"]
     try:
-        answer = run_agent(query, chat_id = st.session_state["chat_id"])
+        run_agent(query, chat_id=chat_id)
     except Exception as exc:  # noqa: BLE001
-        answer = f"⚠️ Agent error: {exc}"
-    st.session_state["chat_log"].append({"role": "assistant", "content": answer})
+        st.session_state["chat_log"].append({"role": "user", "content": query})
+        st.session_state["chat_log"].append({"role": "assistant", "content": f"⚠️ Agent error: {exc}"})
+        return
+    st.session_state["chat_log"] = _load_chat_log_from_db(chat_id)
+    _restore_opportunity_grid(chat_id)
 
 
 def render_hex_card() -> None:
@@ -253,7 +294,7 @@ def render_hex_card() -> None:
         return
 
     cat = st.session_state["selected_category"]
-    opp_score = cell.get("opportunity_score", 0)
+    opp_score = cell.opportunity_score
 
     # Визуальная подсказка: зелёный — хорошее место, красный — плохое
     if opp_score > 5:
@@ -270,7 +311,7 @@ def render_hex_card() -> None:
         st.markdown(f"### {verdict_emoji} Selected hex")
         st.caption(
             f"**{verdict_text}** for opening a new `{cat}` · "
-            f"`{cell['center_lat']:.4f}, {cell['center_lon']:.4f}`"
+            f"`{cell.center_lat:.4f}, {cell.center_lon:.4f}`"
         )
 
         m1, m2, m3 = st.columns(3)
@@ -281,19 +322,19 @@ def render_hex_card() -> None:
         )
         m2.metric(
             "Competitors",
-            cell.get("competitor_count", 0),
+            cell.competitor_count,
             help=f"Существующие {cat} в этом гексе",
         )
         m3.metric(
             "Total POI",
-            cell["total_places"],
+            cell.total_places,
             help="Любые места — прокси трафика и жизни района",
         )
 
-        if cell.get("competitor_count", 0) > 0:
+        if cell.competitor_count > 0:
             st.caption(
                 f"Средний рейтинг конкурентов: "
-                f"⭐ {cell.get('competitor_avg_rating', 0):.1f}"
+                f"⭐ {cell.competitor_avg_rating:.1f}"
             )
 
         btn_ask, btn_dismiss = st.columns([2, 1])
@@ -335,6 +376,10 @@ def render_chat_panel() -> None:
     with top_right:
         st.write("")
         if st.button("🗑️ Clear", use_container_width=True):
+            # Start a brand-new session so the old one stays intact in DB
+            new_chat_id = str(uuid.uuid4())
+            st.session_state["chat_id"] = new_chat_id
+            st.query_params["chat_id"] = new_chat_id
             st.session_state["chat_log"] = []
             st.session_state.pop("opportunity_grid", None)
             st.session_state.pop("agent_heatmap", None)
@@ -345,11 +390,12 @@ def render_chat_panel() -> None:
     with st.expander("Quick actions", expanded=False):
         b1, b2 = st.columns(2)
         if b1.button("📍 Show opportunity grid", use_container_width=True):
+            chat_id = st.session_state["chat_id"]
             cat = st.session_state["selected_category"]
             cells = compute_opportunity_grid(
                 category=cat, hex_resolution=DEFAULT_HEX_RES
             )
-            st.session_state["opportunity_grid"] = {
+            grid_data = {
                 "cells": cells,
                 "args": {
                     "category": cat,
@@ -357,15 +403,18 @@ def render_chat_panel() -> None:
                     "demand_threshold": 0.0,
                 },
             }
-            st.session_state["chat_log"].append({
-                "role": "assistant",
-                "content": (
-                    f"Built opportunity grid for **{cat}** "
-                    f"({len(cells)} hex cells, "
-                    f"{sum(1 for c in cells if c['is_visible'])} visible). "
-                    f"Click a hex to see its metrics."
-                ),
-            })
+            st.session_state["opportunity_grid"] = grid_data
+            save_opportunity_grid(chat_id, {'cells': [c.model_dump() for c in cells], 'args': grid_data['args']})
+            msg_content = (
+                f"Built opportunity grid for **{cat}** "
+                f"({len(cells)} hex cells, "
+                f"{sum(1 for c in cells if c.is_visible)} visible). "
+                f"Click a hex to see its metrics."
+            )
+            mem = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
+            mem.add_assistant_message(msg_content)
+            mem.save()
+            st.session_state["chat_log"] = _load_chat_log_from_db(chat_id)
             st.rerun()
 
         if b2.button("❓ Where to open?", use_container_width=True):

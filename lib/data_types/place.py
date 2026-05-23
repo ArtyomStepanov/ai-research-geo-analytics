@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from pydantic import BaseModel
+
 
 class Place(BaseModel):
     name: str | None = None
