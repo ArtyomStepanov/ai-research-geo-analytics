@@ -100,8 +100,6 @@ def run(query: str, chat_id: str) -> str:
     """Run agent with memory and multi-step tool calling.
     Args:
         query: User query
-        memory: Optional PersistedMemory instance for persistent context.
-                If None, creates ephemeral memory for this turn only.
     Returns:
         Final assistant response as string.
     """
