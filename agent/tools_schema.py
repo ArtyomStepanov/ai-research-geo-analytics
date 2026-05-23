@@ -8,6 +8,7 @@ from lib.data_types.agent_tools_schema import (
     SearchByNameRequest,
     RankPlacesRequest,
     FilterRequest,
+    NearestHexesRequest,
     OpportunityGridRequest,
     DistanceRequest,
     HeatmapRequest,
@@ -44,6 +45,15 @@ TOOLS = [
         "rank_places",
         "Rank a previously returned list of places."
         "Strategy is either 'distance' (ascending distance_km) or 'score' (composite rating - distance)."
+    ),
+    to_tool_schema(
+        NearestHexesRequest,
+        "nearest_hexes",
+        "Get opportunity-grid metrics for a hex and its neighbours. "
+        "Each cell includes (row, col) grid offsets from city centre: "
+        "row>0=East, row<0=West, col<0=North, col>0=South. "
+        "Requires opportunity_grid to have been computed. "
+        "Use when analysing a specific area selected on the map."
     ),
     to_tool_schema(
         OpportunityGridRequest,

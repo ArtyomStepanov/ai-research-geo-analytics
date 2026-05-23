@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import Iterable
-from lib.data_types import Place
+from lib.data_types import Place, Hex
 
 import folium
 import html
@@ -105,7 +105,7 @@ def underserved_map(
 
 
 def opportunity_hex_map(
-    cells: list[dict],
+    cells: list[Hex],
     places: list[Place] | None = None,
     zoom_start: int = 13,
     max_demand: float | None = None,
@@ -136,19 +136,19 @@ def opportunity_hex_map(
         return folium.Map(location=(0, 0), zoom_start=2)
 
     # Центр карты — медиана по видимым гексам, чтобы не перекосило одним выбросом
-    visible_cells = [c for c in cells if c.get("is_visible")] or cells
+    visible_cells = [c for c in cells if c.is_visible] or cells
     center = (
-        sum(c["center_lat"] for c in visible_cells) / len(visible_cells),
-        sum(c["center_lon"] for c in visible_cells) / len(visible_cells),
+        sum(c.center_lat for c in visible_cells) / len(visible_cells),
+        sum(c.center_lon for c in visible_cells) / len(visible_cells),
     )
     m = folium.Map(location=center, zoom_start=zoom_start)
 
     # Значения метрики для расчёта цвета
-    values = [c.get(color_metric, c.get("opportunity_score", 0)) for c in cells]
+    values = [getattr(c, color_metric, c.opportunity_score) for c in cells]
 
     # Нормализация по ВИДИМЫМ ячейкам, чтобы выбросы из «контекстных»
     # пустых гексов не сжимали шкалу
-    visible_vals = [v for v, c in zip(values, cells) if c["is_visible"]]
+    visible_vals = [v for v, c in zip(values, cells) if c.is_visible]
     if not visible_vals:
         visible_vals = values
     min_val = min_demand if min_demand is not None else min(visible_vals)
@@ -160,17 +160,17 @@ def opportunity_hex_map(
 
     for c, val in zip(cells, values):
         # Невидимые гексы (контекст вокруг): тонкий серый контур
-        if not c["is_visible"]:
+        if not c.is_visible:
             folium.Polygon(
-                locations=[list(pt) for pt in c["boundary"]],
+                locations=[list(pt) for pt in c.boundary],
                 color="#888888",
                 weight=1,
                 fill=True,
                 fill_opacity=0.08,
                 popup=(
                     f"<b>Empty / low activity</b><br>"
-                    f"Total POI: {c['total_places']}<br>"
-                    f"Opportunity: {c.get('opportunity_score', 0):.2f}"
+                    f"Total POI: {c.total_places}<br>"
+                    f"Opportunity: {c.opportunity_score:.2f}"
                 ),
             ).add_to(m)
             continue
@@ -184,17 +184,17 @@ def opportunity_hex_map(
         )
 
         folium.Polygon(
-            locations=[list(pt) for pt in c["boundary"]],
+            locations=[list(pt) for pt in c.boundary],
             color=color,
             weight=1.5,
             fill=True,
             fill_opacity=opacity,
             popup=(
-                f"<b>Opportunity</b>: {c.get('opportunity_score', 0):.2f}<br>"
-                f"Demand (other POI): {c['demand_score']}<br>"
-                f"Competitors: {c.get('competitor_count', 0)} "
-                f"(avg ⭐ {c.get('competitor_avg_rating', 0):.1f})<br>"
-                f"Total POI: {c['total_places']}"
+                f"<b>Opportunity</b>: {c.opportunity_score:.2f}<br>"
+                f"Demand (other POI): {c.demand_score}<br>"
+                f"Competitors: {c.competitor_count} "
+                f"(avg ⭐ {c.competitor_avg_rating:.1f})<br>"
+                f"Total POI: {c.total_places}"
             ),
         ).add_to(m)
 

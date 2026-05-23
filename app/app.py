@@ -34,7 +34,7 @@ from agent.prompts import SYSTEM_PROMPT  # noqa: E402
 
 from core_utils.coverage import compute_opportunity_grid, HEX_SIZE_REFERENCE  # noqa: E402
 from core_utils.search import search_places  # noqa: E402
-from lib.data_types import Place  # noqa: E402
+from lib.data_types import Place, Hex  # noqa: E402
 from map_visualization import opportunity_hex_map  # noqa: E402
 
 from streamlit_folium import st_folium
@@ -84,6 +84,7 @@ def _restore_opportunity_grid(chat_id: str) -> None:
     """Restore the last opportunity_grid from the dedicated DB column into session_state."""
     grid_data = load_opportunity_grid(chat_id)
     if grid_data:
+        grid_data['cells'] = [Hex(**c) for c in grid_data['cells']]
         st.session_state["opportunity_grid"] = grid_data
 
 
@@ -120,7 +121,7 @@ _init_state()
 
 
 # --- helpers ----------------------------------------------------------------
-def _find_hex_by_click(lat: float, lng: float) -> dict | None:
+def _find_hex_by_click(lat: float, lng: float) -> Hex | None:
     """Найти гекс из текущей сетки по координатам клика.
 
     Используем тот же hex_resolution, что был при построении: считаем
@@ -140,25 +141,27 @@ def _find_hex_by_click(lat: float, lng: float) -> dict | None:
         return None
 
     for cell in opp["cells"]:
-        if cell["hex_id"] == target_hex_id:
+        if cell.hex_id == target_hex_id:
             return cell
     return None
 
 
-def _format_hex_query(cell: dict, category: str) -> str:
+def _format_hex_query(cell: Hex, category: str) -> str:
     """Сформировать обогащённый запрос агенту по метрикам гекса."""
     return (
-        f"Analyse the area around hex {cell['hex_id']} "
-        f"(center: lat={cell['center_lat']:.5f}, lon={cell['center_lon']:.5f}) "
+        f"Analyse the area around hex {cell.hex_id} "
+        f"(center: lat={cell.center_lat:.5f}, lon={cell.center_lon:.5f}) "
         f"for opening a new {category}.\n\n"
         f"Hex metrics:\n"
-        f"- Opportunity score: {cell.get('opportunity_score', 0):.2f}\n"
-        f"- Demand (other POI): {cell['demand_score']}\n"
-        f"- Existing {category} competitors: {cell.get('competitor_count', 0)} "
-        f"(avg rating {cell.get('competitor_avg_rating', 0):.1f})\n"
-        f"- Total POI in hex: {cell['total_places']}\n\n"
-        f"Use nearest_places to list real competitors in/near this hex and "
-        f"give a verdict on whether it is a good location."
+        f"- Opportunity score: {cell.opportunity_score:.2f}\n"
+        f"- Demand (other POI): {cell.demand_score}\n"
+        f"- Existing {category} competitors: {cell.competitor_count} "
+        f"(avg rating {cell.competitor_avg_rating:.1f})\n"
+        f"- Total POI in hex: {cell.total_places}\n\n"
+        f"Call nearest_hexes(hex_id='{cell.hex_id}', radius=1) to get neighbourhood "
+        f"context (includes row/col grid positions of each hex), "
+        f"then nearest_places for real competitors near the hex centre, "
+        f"and give a verdict on whether it is a good location."
     )
 
 
@@ -185,7 +188,7 @@ def render_sidebar() -> None:
             resolution = args.get("hex_resolution", DEFAULT_HEX_RES)
             threshold = args.get("demand_threshold", 0.0)
             n_cells = len(opp["cells"])
-            n_visible = sum(1 for c in opp["cells"] if c.get("is_visible"))
+            n_visible = sum(1 for c in opp["cells"] if c.is_visible)
 
             st.markdown(f"**Opportunity grid** · `{category}`")
             col_a, col_b = st.columns(2)
@@ -291,7 +294,7 @@ def render_hex_card() -> None:
         return
 
     cat = st.session_state["selected_category"]
-    opp_score = cell.get("opportunity_score", 0)
+    opp_score = cell.opportunity_score
 
     # Визуальная подсказка: зелёный — хорошее место, красный — плохое
     if opp_score > 5:
@@ -308,7 +311,7 @@ def render_hex_card() -> None:
         st.markdown(f"### {verdict_emoji} Selected hex")
         st.caption(
             f"**{verdict_text}** for opening a new `{cat}` · "
-            f"`{cell['center_lat']:.4f}, {cell['center_lon']:.4f}`"
+            f"`{cell.center_lat:.4f}, {cell.center_lon:.4f}`"
         )
 
         m1, m2, m3 = st.columns(3)
@@ -319,19 +322,19 @@ def render_hex_card() -> None:
         )
         m2.metric(
             "Competitors",
-            cell.get("competitor_count", 0),
+            cell.competitor_count,
             help=f"Существующие {cat} в этом гексе",
         )
         m3.metric(
             "Total POI",
-            cell["total_places"],
+            cell.total_places,
             help="Любые места — прокси трафика и жизни района",
         )
 
-        if cell.get("competitor_count", 0) > 0:
+        if cell.competitor_count > 0:
             st.caption(
                 f"Средний рейтинг конкурентов: "
-                f"⭐ {cell.get('competitor_avg_rating', 0):.1f}"
+                f"⭐ {cell.competitor_avg_rating:.1f}"
             )
 
         btn_ask, btn_dismiss = st.columns([2, 1])
@@ -401,11 +404,11 @@ def render_chat_panel() -> None:
                 },
             }
             st.session_state["opportunity_grid"] = grid_data
-            save_opportunity_grid(chat_id, grid_data)
+            save_opportunity_grid(chat_id, {'cells': [c.model_dump() for c in cells], 'args': grid_data['args']})
             msg_content = (
                 f"Built opportunity grid for **{cat}** "
                 f"({len(cells)} hex cells, "
-                f"{sum(1 for c in cells if c['is_visible'])} visible). "
+                f"{sum(1 for c in cells if c.is_visible)} visible). "
                 f"Click a hex to see its metrics."
             )
             mem = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)

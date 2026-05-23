@@ -4,6 +4,10 @@ from typing import Optional
 import pandas as pd
 import h3
 from .search import _load_places
+from lib.data_types import Hex
+
+# Центр города — начало координатной системы гексов (row=0, col=0)
+CITY_CENTER = (56.8386, 60.6055)  # Екатеринбург
 
 # Справочник для UI/логов: resolution -> примерный размер
 HEX_SIZE_REFERENCE = {
@@ -132,6 +136,12 @@ def compute_opportunity_grid(
     valid_hexes = visible_hexes | (set(agg["hex_id"]) & border_hexes)
     agg = agg[agg["hex_id"].isin(valid_hexes)]
 
+    # Опорный гекс для системы координат (row, col)
+    # row = East-West offset (positive = East), col = North-South offset (positive = South)
+    # Формула: row = oi - i,  col = j - oj,  где (oi, oj) — IJ центра города
+    origin_hex = h3.latlng_to_cell(CITY_CENTER[0], CITY_CENTER[1], hex_resolution)
+    origin_ij = h3.cell_to_local_ij(origin_hex, origin_hex)
+
     # Сборка результата для UI
     results = []
     for _, row in agg.iterrows():
@@ -139,18 +149,27 @@ def compute_opportunity_grid(
         lat, lon = h3.cell_to_latlng(h)
         boundary = h3.cell_to_boundary(h)
 
-        results.append({
-            "hex_id": h,
-            "center_lat": lat,
-            "center_lon": lon,
-            "boundary": boundary,
-            "demand_score": round(float(row["demand_score"]), 2),
-            "competitor_density": round(float(row["competitor_density"]), 2),
-            "competitor_count": int(row["competitor_count"]),
-            "competitor_avg_rating": round(float(row["competitor_avg_rating"]), 2),
-            "opportunity_score": round(float(row["opportunity_score"]), 2),
-            "total_places": int(row["total_places"]),
-            "is_visible": bool(row["is_visible"]),
-        })
+        try:
+            hij = h3.cell_to_local_ij(origin_hex, h)
+            grid_row = origin_ij[0] - hij[0]
+            grid_col = hij[1] - origin_ij[1]
+        except Exception:
+            grid_row = grid_col = None
+
+        results.append(Hex(
+            hex_id=h,
+            center_lat=lat,
+            center_lon=lon,
+            boundary=boundary,
+            row=grid_row,
+            col=grid_col,
+            demand_score=round(float(row["demand_score"]), 2),
+            competitor_density=round(float(row["competitor_density"]), 2),
+            competitor_count=int(row["competitor_count"]),
+            competitor_avg_rating=round(float(row["competitor_avg_rating"]), 2),
+            opportunity_score=round(float(row["opportunity_score"]), 2),
+            total_places=int(row["total_places"]),
+            is_visible=bool(row["is_visible"]),
+        ))
 
     return results

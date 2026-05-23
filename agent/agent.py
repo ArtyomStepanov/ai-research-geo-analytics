@@ -25,6 +25,7 @@ from .db import init_db
 
 from .tools import (
     _tool_opportunity_grid,
+    _tool_nearest_hexes,
     _tool_distance,
     _tool_filtering,
     _tool_rank,
@@ -45,6 +46,7 @@ load_dotenv()
 TOOL_IMPL = {
     "geocode": _tool_geocode,
     "nearest_places": _tool_nearest_places,
+    "nearest_hexes": _tool_nearest_hexes,
     "search_by_name": _tool_search_by_name,
     "search_places": _tool_search_places,
     "rank_places": _tool_rank,

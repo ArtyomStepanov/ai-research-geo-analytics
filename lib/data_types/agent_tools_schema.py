@@ -59,6 +59,13 @@ class UnderservedAreasRequest(BaseModel):
     top_k: int = Field(10, ge=1, description="How many top cells to return.")
 
 
+class NearestHexesRequest(BaseModel):
+    """Retrieve a hex and its neighbourhood from the opportunity grid."""
+    hex_id: str = Field(..., description="H3 hex cell identifier to analyse.")
+    radius: int = Field(1, ge=0, le=3,
+                        description="Ring radius (0=target only, 1=target+6 neighbours).")
+
+
 class OpportunityGridRequest(BaseModel):
     """Calculate a hexagonal opportunity grid for site selection."""
     category: str = Field(
