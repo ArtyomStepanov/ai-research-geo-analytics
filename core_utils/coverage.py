@@ -1,6 +1,6 @@
 """Hex-grid opportunity analysis for B2B site selection."""
 from __future__ import annotations
-from typing import Optional
+
 import pandas as pd
 import h3
 from .search import _load_places
@@ -21,7 +21,7 @@ HEX_SIZE_REFERENCE = {
 def compute_opportunity_grid(
     category: str = "pharmacy",
     hex_resolution: int = 8,
-    csv_path: Optional[str] = None,
+    csv_path: str | None = None,
     demand_threshold: float = 0.0,
     competitor_rating_weight: float = 0.5,
 ) -> list[dict]:

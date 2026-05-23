@@ -1,22 +1,21 @@
 """Simple conversation memory with Database for the agent."""
-from typing import Optional
+from __future__ import annotations
+
 from .db import load_chat_history, save_chat_history
+
 
 class ConversationMemory:
     """Хранит историю диалога и контекст между шагами."""
-
 
     def __init__(self, system_prompt: str, max_turns: int = 10):
         self.system_prompt = system_prompt
         self.max_turns = max_turns
         self.history: list[dict] = [{"role": "system", "content": system_prompt}]
 
-
     def add_user_message(self, content: str):
         self.history.append({"role": "user", "content": content})
 
-
-    def add_assistant_message(self, content: str, tool_calls: Optional[list] = None):
+    def add_assistant_message(self, content: str, tool_calls: list | None = None):
         msg = {"role": "assistant", "content": content or ""}
         if tool_calls:
             msg["tool_calls"] = [
@@ -33,14 +32,12 @@ class ConversationMemory:
             if m["role"] in ("user", "assistant") and m.get("content")
         ]
 
-
     def add_tool_result(self, tool_call_id: str, content: str):
         self.history.append({
             "role": "tool",
             "tool_call_id": tool_call_id,
             "content": content
         })
-
 
     def get_messages(self) -> list[dict]:
         """Возвращает сообщения для отправки в LLM, обрезая старые, если нужно."""
@@ -49,7 +46,6 @@ class ConversationMemory:
             return self.history.copy()
         # Сохраняем system + последние сообщения
         return [self.history[0]] + self.history[-(self.max_turns * 2):]
-
 
     def clear(self):
         """Очистить память, оставив только system prompt."""

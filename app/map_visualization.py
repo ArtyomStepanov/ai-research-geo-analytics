@@ -1,16 +1,18 @@
 """Folium-based map helpers used by the Streamlit app."""
 from __future__ import annotations
 
+import html
 from typing import Iterable
-from lib.data_types import Place, Hex
 
 import folium
-import html
-from folium.plugins import HeatMap
 import matplotlib
 import matplotlib.colors as mcolors
+from folium.plugins import HeatMap
+
+from lib.data_types import Place, Hex
 
 _BASE_CIRCLE_RADIUS = 4
+
 
 def _center(points: list[tuple[float, float]]) -> tuple[float, float]:
     return (

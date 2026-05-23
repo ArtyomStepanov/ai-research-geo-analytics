@@ -6,17 +6,17 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+
+import pandas as pd
 
 from lib.data_types import Place
-import pandas as pd
 
 from .geo_utils import haversine_km_array
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
-def _load_places(csv_path: Optional[str] = None) -> pd.DataFrame:
+def _load_places(csv_path: str | None = None) -> pd.DataFrame:
     """Load amenities table.
 
     Порядок поиска:
@@ -46,12 +46,12 @@ def _load_places(csv_path: Optional[str] = None) -> pd.DataFrame:
 NAME_SCORE_CUTOFF = 83
 
 def search_places(
-    category: Optional[list[str]] = None,
-    name: Optional[str] = None,
-    near: Optional[tuple[float, float]] = None,
-    max_distance_km: Optional[float] = None,
-    limit: Optional[int] = 20,
-    csv_path: Optional[str] = None,
+    category: list[str] | None = None,
+    name: str | None = None,
+    near: tuple[float, float] | None = None,
+    max_distance_km: float | None = None,
+    limit: int | None = 20,
+    csv_path: str | None = None,
 ) -> list[Place]:
     """Return amenities matching the filters, optionally sorted by distance.
 
@@ -105,7 +105,7 @@ def search_places(
 
 def nearest_places(
     point: tuple[float, float],
-    category: Optional[list[str]] = None,
+    category: list[str] | None = None,
     limit: int = 5,
 ) -> list[Place]:
     """Return the N nearest places to `point`."""
@@ -113,8 +113,8 @@ def nearest_places(
 
 
 def search_by_name(
-        name: str,
-        point: Optional[tuple[float, float]]
+    name: str,
+    point: tuple[float, float] | None,
 ) -> list[Place]:
     """Return sorted places which match to the `name`."""
     return search_places(near=point, name=name, limit=None)

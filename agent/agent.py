@@ -18,11 +18,9 @@ from dotenv import load_dotenv
 from core_utils.coverage import compute_opportunity_grid
 from core_utils.search import search_places
 
-from typing import Optional
-
+from .db import init_db, save_opportunity_grid
 from .memory import ConversationMemory, PersistedMemory
-from .db import init_db
-
+from .prompts import SYSTEM_PROMPT
 from .tools import (
     _tool_opportunity_grid,
     _tool_nearest_hexes,
@@ -35,10 +33,7 @@ from .tools import (
     _tool_build_heatmap,
     _tool_geocode,
 )
-
-from .prompts import SYSTEM_PROMPT
 from .tools_schema import TOOLS
-from .db import save_opportunity_grid
 
 load_dotenv()
 
@@ -95,10 +90,9 @@ def _llm_client_and_model():
         3. Любой другой OpenAI-совместимый endpoint (Together, Groq, ...).
     """
     from openai import OpenAI
-    #print("DEBUG: Build client", flush=True)
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
-    model = model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
+    model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
@@ -129,8 +123,6 @@ def run(query: str, chat_id: str) -> str:
     # Цикл tool calling: максимум 5 итераций, чтобы избежать бесконечного цикла
     max_iterations = 5
     for iteration in range(max_iterations):
-        #print(f"[DEBUG] Iteration {iteration + 1}/{max_iterations}", flush=True)
-
         messages = memory.get_messages()
 
         response = client.chat.completions.create(
@@ -159,7 +151,6 @@ def run(query: str, chat_id: str) -> str:
                 result = impl(args)
             else:
                 result = {"error": f"unknown tool '{name}'"}
-                #print(f"[WARN] Unknown tool: {name}", flush=True)
 
             if name == "opportunity_grid" and isinstance(result, list):
                 save_opportunity_grid(chat_id, {"cells": result, "args": dict(args)})
@@ -169,12 +160,10 @@ def run(query: str, chat_id: str) -> str:
                 call.id,
                 json.dumps(result, ensure_ascii=False, default=str)
             )
-            #print(f"[TOOL] {name} → {type(result).__name__}", flush=True)
 
         memory.save()  # Persist after each complete tool-call iteration
 
     # Если достигли лимита итераций — просим LLM сформулировать ответ на основе накопленного контекста
-    #print("[WARN] Max iterations reached, forcing final answer", flush=True)
     memory.add_assistant_message(
         "[System] Please provide a final answer based on the tools executed so far."
     )
@@ -186,13 +175,9 @@ def run(query: str, chat_id: str) -> str:
     return final.choices[0].message.content or ""
 
 
-def main() -> None:    
-    # Создаём память на всю сессию (сохраняется между запросами в рамках одного запуска)
+def main() -> None:
     memory = PersistedMemory(SYSTEM_PROMPT)
-
     query = " ".join(sys.argv[1:])
-
-    #print(f"[QUERY] {query}", flush=True)
     print(run(query, memory=memory))
 
 

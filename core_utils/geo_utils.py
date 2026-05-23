@@ -1,10 +1,11 @@
 """Geospatial helpers: distances, heatmaps, simple aggregations."""
 from __future__ import annotations
 
+from typing import Any, Literal
+
+import networkx as nx
 import numpy as np
 import osmnx as ox
-import networkx as nx
-from typing import Literal, Any
 
 ox.settings.use_cache = True
 
@@ -107,6 +108,7 @@ def build_heatmap(points, **kwargs):  # noqa: ANN001 - returns folium.Map
 
 Mode = Literal["walk", "drive", "bike"]
 DEFAULT_SPEEDS: dict[str, float] = {"walk": 4.75, "bike": 10.0}
+
 
 def _graph_for_points(
     points: list[tuple[float, float]], mode: Mode
