@@ -50,18 +50,19 @@ TOOLS = [
         NearestHexesRequest,
         "nearest_hexes",
         "Get opportunity-grid metrics for a hex and its neighbours. "
-        "Each cell includes (row, col) grid offsets from city centre: "
-        "row>0=East, row<0=West, col<0=North, col>0=South. "
-        "Requires opportunity_grid to have been computed. "
-        "Use when analysing a specific area selected on the map."
+        "radius=1 returns target ('C') + 6 neighbours each with a 'label' field: "
+        "'N'/'NE'/'SE'/'S'/'SW'/'NW' — compass direction from center. "
+        "USE THESE LABELS in responses instead of raw hex IDs. "
+        "Requires opportunity_grid to have been computed."
     ),
     to_tool_schema(
         OpportunityGridRequest,
         "opportunity_grid",
-        "Compute a hex-grid opportunity map showing demand score, competitor density, and optimal "
-        "locations for a new point of interest. Use for queries about: low/lacking coverage, "
-        "underserved areas, where to open a new X, market saturation, best location analysis, "
-        "'find areas with low X coverage', 'where do we lack X', 'open new X'."
+        "Compute a hex-grid opportunity map for a category. "
+        "Use strategy='implant' for site-selection queries: 'where to open', 'underserved areas', "
+        "'low coverage', 'find best location', 'where do we lack X'. "
+        "Use strategy='aggregate' for competitive-landscape queries: 'show competitor positions', "
+        "'market saturation', 'where are competitors strong', 'current competitor landscape'."
     ),
     to_tool_schema(
         FilterRequest,

@@ -116,8 +116,21 @@ def _tool_geocode(args: dict[str, Any]) -> dict:
     return {"lat": lat, "lon": lon, "location": location}
 
 
+# row = origin_i - i  (row>0 = East, row<0 = West)
+# col = j - origin_j  (col<0 = North, col>0 = South)
+# For H3 ring-1, the 6 (dr, dc) offsets map to these compass labels.
+_IJ_TO_DIRECTION: dict[tuple[int, int], str] = {
+    ( 0, -1): "N",
+    (+1,  0): "E",
+    (+1, +1): "SE",
+    ( 0, +1): "S",
+    (-1,  0): "W",
+    (-1, -1): "NW",
+}
+
+
 def _tool_nearest_hexes(args: dict[str, Any]) -> dict:
-    """Return a hex and its ring-neighbours from the opportunity grid."""
+    """Return a hex and its ring-neighbours with compass direction labels."""
     hex_id = args.get("hex_id", "").strip()
     radius = int(args.get("radius", 1))
 
@@ -138,16 +151,34 @@ def _tool_nearest_hexes(args: dict[str, Any]) -> dict:
         return c.model_dump(exclude={"boundary"})
 
     target_cell = cells_by_id.get(hex_id)
-    neighbors = [
-        _slim(cells_by_id[h])
-        for h in h3.grid_disk(hex_id, radius)
-        if h in cells_by_id and h != hex_id
-    ]
+
+    target_dict = None
+    if target_cell is not None:
+        target_dict = _slim(target_cell)
+        target_dict["label"] = "C"
+
+    neighbors: list[Hex] = []
+    for h in h3.grid_disk(hex_id, radius):
+        if h not in cells_by_id or h == hex_id:
+            continue
+        neighbor_cell = cells_by_id[h]
+        label = None
+        if radius == 1 and target_cell is not None:
+            dr = neighbor_cell.row - target_cell.row
+            dc = neighbor_cell.col - target_cell.col
+            label = _IJ_TO_DIRECTION.get((dr, dc), "?")
+        neighbors.append(neighbor_cell.model_copy(update={"label": label}))
+
+    try:
+        import streamlit as st
+        st.session_state["highlighted_hexes"] = {hex_id} | {n.hex_id for n in neighbors}
+    except Exception:
+        pass
 
     return {
         "target_hex": hex_id,
         "target_in_grid": target_cell is not None,
-        "target_cell": _slim(target_cell) if target_cell else None,
+        "target_cell": target_dict,
         "radius": radius,
         "neighbors": neighbors,
     }
@@ -159,8 +190,8 @@ def _tool_opportunity_grid(args: dict[str, Any]) -> list[Hex]:
     cells = compute_opportunity_grid(
         category=args.get("category", "pharmacy"),
         hex_resolution=int(args.get("hex_resolution", 8)),
-        demand_threshold=float(args.get("demand_threshold", 0.0)),
-        competitor_rating_weight=float(args.get("competitor_rating_weight", 1.0)),
+        visibility_threshold=float(args.get("demand_threshold", 0.0)),
+        strategy=args.get("strategy", "implant"),
     )
     try:
         import streamlit as st

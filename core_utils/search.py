@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lib.data_types import Place
+from lib.data_types import Place, DemandPoint
 
 from .geo_utils import haversine_km_array
 
@@ -41,6 +41,36 @@ def _load_places(csv_path: str | None = None) -> pd.DataFrame:
         "No places CSV found. Run `python scripts/download_osm.py --city ...` "
         "or `python scripts/generate_sample_data.py`."
     )
+
+
+def _load_demand(csv_path: str | None = None) -> pd.DataFrame:
+    """Load demand table (residential buildings with population counts).
+
+    Порядок поиска:
+        1. явный `csv_path`,
+        2. `data/processed/*demand*.csv`,
+        3. `data/raw/*demand*.csv`.
+    Возвращает только колонки lat, lon, count_people.
+    """
+    if csv_path is not None:
+        path = Path(csv_path)
+    else:
+        path = None
+        for sub in ("processed", "raw"):
+            for p in sorted((DATA_DIR / sub).glob("*demand*.csv")):
+                path = p
+                break
+            if path is not None:
+                break
+
+    if path is None:
+        raise FileNotFoundError(
+            "No demand CSV found. Expected a file matching '*demand*.csv' in "
+            "data/processed/ or data/raw/."
+        )
+
+    df = pd.read_csv(path, usecols=["lat", "lon", "count_people"])
+    return df.dropna(subset=["lat", "lon", "count_people"])
 
 
 NAME_SCORE_CUTOFF = 83
@@ -108,7 +138,7 @@ def nearest_places(
     category: list[str] | None = None,
     limit: int = 5,
 ) -> list[Place]:
-    """Return the N nearest places to `point`."""
+    """Return the `limit` nearest places to `point`."""
     return search_places(category=category, near=point, limit=limit)
 
 
@@ -118,3 +148,19 @@ def search_by_name(
 ) -> list[Place]:
     """Return sorted places which match to the `name`."""
     return search_places(near=point, name=name, limit=None)
+
+
+def nearest_demand(
+    point: tuple[float, float],
+    limit: int = 50,
+) -> list[DemandPoint]:
+    """Return the `limit` nearest demand points to `point`."""
+    lat0, lon0 = point
+    df = _load_demand()
+    df = df.assign(
+        distance_km=haversine_km_array(
+            lat0, lon0, df["lat"].to_numpy(), df["lon"].to_numpy()
+        )
+    )
+    df = df.nsmallest(limit, "distance_km").astype(object).where(pd.notna(df), None)
+    return [DemandPoint(**rec) for rec in df.to_dict(orient="records")]

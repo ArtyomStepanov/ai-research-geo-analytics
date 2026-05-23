@@ -31,12 +31,10 @@ def _add_places(places: list[Place] | None, m: folium.Map) -> None:
         ]
         if p.rating is not None:
             parts.append(f"rating: {p.rating}")
-        if p.opening_hours is not None:
-            parts.append(p.opening_hours)
         if p.score is not None:
             parts.append(f"score: {p.score}")
         if p.price_level is not None:
-            parts.append(f"price: {p.price_level}")
+            parts.append(f"price: {p.price_level}₽")
         folium.CircleMarker(
             location=(p.lat, p.lon),
             radius=_BASE_CIRCLE_RADIUS,
@@ -115,6 +113,7 @@ def opportunity_hex_map(
     color_metric: str = "opportunity_score",  # main B2B metric
     colormap: str = "RdYlGn",                 # red=bad, green=good
     opacity_range: tuple[float, float] = (0.3, 0.65),
+    highlighted_hex_ids: set[str] | None = None,
 ) -> folium.Map:
     """Отрисовать H3-сетку с градиентной заливкой.
 
@@ -160,6 +159,15 @@ def opportunity_hex_map(
     cmap = matplotlib.colormaps[colormap]
     norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
 
+    # Прозрачность определяется спросом (demand_score), а не opportunity.
+    # Нет спроса → прозрачный; много жителей → насыщенный цвет.
+    demand_vals = [c.demand_score for c in cells if c.is_visible]
+    d_min = min(demand_vals) if demand_vals else 0.0
+    d_max = max(demand_vals) if demand_vals else 1.0
+    d_span = d_max - d_min + 1e-6
+
+    in_highlight_mode = bool(highlighted_hex_ids)
+
     for c, val in zip(cells, values):
         # Невидимые гексы (контекст вокруг): тонкий серый контур
         if not c.is_visible:
@@ -177,19 +185,37 @@ def opportunity_hex_map(
             ).add_to(m)
             continue
 
-        # Видимые гексы: градиент
-        normalized = (val - min_val) / span
+        is_highlighted = (not in_highlight_mode) or (c.hex_id in highlighted_hex_ids)
+
+        if not is_highlighted:
+            folium.Polygon(
+                locations=[list(pt) for pt in c.boundary],
+                color="#aaaaaa",
+                weight=1,
+                fill=True,
+                fill_color="#cccccc",
+                fill_opacity=0.10,
+                popup=(
+                    f"<b>Opportunity</b>: {c.opportunity_score:.2f}<br>"
+                    f"Demand: {c.demand_score}<br>"
+                    f"Competitors: {c.competitor_count}<br>"
+                    f"Total POI: {c.total_places}"
+                ),
+            ).add_to(m)
+            continue
+
+        # Видимые гексы: цвет = конкуренция, прозрачность = спрос
         rgba = cmap(norm(val))
         color = mcolors.to_hex(rgba[:3])
-        opacity = opacity_range[0] + normalized * (
-            opacity_range[1] - opacity_range[0]
-        )
+        demand_norm = (c.demand_score - d_min) / d_span
+        opacity = opacity_range[0] + demand_norm * (opacity_range[1] - opacity_range[0])
 
         folium.Polygon(
             locations=[list(pt) for pt in c.boundary],
-            color=color,
-            weight=1.5,
+            color="#333333" if in_highlight_mode else color,
+            weight=3.0 if in_highlight_mode else 1.5,
             fill=True,
+            fill_color=color,
             fill_opacity=opacity,
             popup=(
                 f"<b>Opportunity</b>: {c.opportunity_score:.2f}<br>"

@@ -151,7 +151,7 @@ def run(query: str, chat_id: str) -> str:
                 result = {"error": f"unknown tool '{name}'"}
 
             if name == "opportunity_grid" and isinstance(result, list):
-                save_opportunity_grid(chat_id, {"cells": result, "args": dict(args)})
+                save_opportunity_grid(chat_id, {"cells": [c.model_dump() for c in result], "args": dict(args)})
 
             # Добавляем результат инструмента в память
             memory.add_tool_result(

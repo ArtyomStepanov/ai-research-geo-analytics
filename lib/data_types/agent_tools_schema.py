@@ -84,9 +84,15 @@ class OpportunityGridRequest(BaseModel):
         0.0,
         description="Minimum demand score to mark a hex as visible/colored on the map."
     )
-    competitor_rating_weight: float = Field(
-        1.0, ge=0.0,
-        description="Multiplier for competitor rating impact on saturation. Higher = stricter filtering."
+    strategy: Literal["implant", "aggregate"] = Field(
+        "implant",
+        description=(
+            "Scoring strategy. "
+            "Use 'implant' for 'where to open / best location / underserved areas' queries: "
+            "simulates placing a new venue and estimates expected customers. "
+            "Use 'aggregate' for 'show competitor landscape / market saturation / competitor positions' queries: "
+            "aggregates existing venue strengths by proximity."
+        )
     )
 
 

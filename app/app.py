@@ -111,6 +111,8 @@ def _init_state() -> None:
         st.session_state["pending_query"] = None
     if "selected_hex" not in st.session_state:
         st.session_state["selected_hex"] = None
+    if "highlighted_hexes" not in st.session_state:
+        st.session_state["highlighted_hexes"] = set()
     if not st.session_state.get("opportunity_grid"):
         _restore_opportunity_grid(st.session_state["chat_id"])
         if st.session_state.get("opportunity_grid"):
@@ -229,10 +231,12 @@ def _build_map() -> folium.Map:
         cells = opp_config["cells"]
         category = st.session_state["selected_category"]
         competitors = search_places(category=[category], limit=500)
+        highlighted = st.session_state.get("highlighted_hexes") or None
         fmap = opportunity_hex_map(
             cells,
             places=competitors,
             zoom_start=DEFAULT_ZOOM,
+            highlighted_hex_ids=highlighted,
         )
         return fmap
 
@@ -246,6 +250,11 @@ def render_map_fragment() -> None:
     Клик по гексу → определяем hex_id → сохраняем в selected_hex →
     rerun → правая колонка показывает карточку с метриками.
     """
+    if st.session_state.get("highlighted_hexes"):
+        if st.button("← Back to full map", key="reset_highlight"):
+            st.session_state["highlighted_hexes"] = set()
+            st.rerun()
+
     fmap = _build_map()
 
     map_state = st_folium(
@@ -272,6 +281,7 @@ def render_map_fragment() -> None:
 
 # --- chat panel -------------------------------------------------------------
 def _send_to_agent(query: str) -> None:
+    st.session_state.pop("highlighted_hexes", None)
     chat_id = st.session_state["chat_id"]
     try:
         run_agent(query, chat_id=chat_id)
@@ -384,6 +394,7 @@ def render_chat_panel() -> None:
             st.session_state.pop("opportunity_grid", None)
             st.session_state.pop("agent_heatmap", None)
             st.session_state.pop("_last_click_handled", None)
+            st.session_state.pop("highlighted_hexes", None)
             st.session_state["selected_hex"] = None
             st.rerun()
 
@@ -393,7 +404,7 @@ def render_chat_panel() -> None:
             chat_id = st.session_state["chat_id"]
             cat = st.session_state["selected_category"]
             cells = compute_opportunity_grid(
-                category=cat, hex_resolution=DEFAULT_HEX_RES
+                category=cat, hex_resolution=DEFAULT_HEX_RES, strategy="aggregate"
             )
             grid_data = {
                 "cells": cells,
@@ -401,6 +412,7 @@ def render_chat_panel() -> None:
                     "category": cat,
                     "hex_resolution": DEFAULT_HEX_RES,
                     "demand_threshold": 0.0,
+                    "strategy": "aggregate",
                 },
             }
             st.session_state["opportunity_grid"] = grid_data
