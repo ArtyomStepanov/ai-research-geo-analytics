@@ -19,7 +19,7 @@ from core_utils.coverage import compute_opportunity_grid
 from core_utils.search import search_places
 
 from .db import init_db, save_opportunity_grid
-from .memory import ConversationMemory, PersistedMemory
+from .memory import PersistedMemory
 from .prompts import SYSTEM_PROMPT
 from .tools import (
     _tool_opportunity_grid,
@@ -100,7 +100,7 @@ def run(query: str, chat_id: str) -> str:
     """Run agent with memory and multi-step tool calling.
     Args:
         query: User query
-        memory: Optional ConversationMemory instance for persistent context.
+        memory: Optional PersistedMemory instance for persistent context.
                 If None, creates ephemeral memory for this turn only.
     Returns:
         Final assistant response as string.
