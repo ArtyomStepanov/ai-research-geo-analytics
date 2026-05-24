@@ -17,11 +17,12 @@ from lib.data_types import Place
 
 # Группы родственных категорий OSM. sim в [0, 1].
 AMENITY_GROUPS: dict[str, dict[str, float]] = {
-    "cafe":       {"cafe": 1.0, "fast_food": 0.6, "restaurant": 0.5, "bakery": 0.7},
-    "restaurant": {"restaurant": 1.0, "cafe": 0.5, "fast_food": 0.4, "bar": 0.3, "pub": 0.3},
-    "fast_food":  {"fast_food": 1.0, "cafe": 0.6, "restaurant": 0.4},
+    "cafe":       {"cafe": 1.0, "fastfood": 0.6, "restaurant": 0.5, "bakery": 0.7},
+    "restaurant": {"restaurant": 1.0, "cafe": 0.5, "fastfood": 0.4, "bar": 0.3, "pub": 0.3},
+    "fastfood":   {"fastfood": 1.0, "cafe": 0.6, "restaurant": 0.4, "delivery": 0.7},
     "bar":        {"bar": 1.0, "pub": 0.8, "restaurant": 0.3},
     "pub":        {"pub": 1.0, "bar": 0.8, "restaurant": 0.3},
+    "delivery":   {"delivery": 1.0, "fastfood": 0.7},
 }
 
 
@@ -33,17 +34,17 @@ def amenity_similarity(a1: str, a2: str) -> float:
     return AMENITY_GROUPS.get(a1, {}).get(a2, 0.0)
 
 
-def price_similarity(b1, b2, sigma_log: float = 0.5) -> float:
+def price_similarity(b1, b2, scale_log: float = 0.5) -> float:
     """Похожесть по среднему чеку (в рублях), на лог-шкале.
 
-    sigma_log=0.5  -> разница в 1.5x даёт ~0.45, в 2x  ~0.25, в 3x ~0.11.
+    scale_log=0.5  -> разница в 1.5x даёт ~0.45, в 2x  ~0.25, в 3x ~0.11.
     NaN/неположительные -> 1.0 (нет информации = не штрафуем).
     """
     if pd.isna(b1) or pd.isna(b2):
         return 1.0
     if b1 <= 0 or b2 <= 0:
         return 1.0
-    return float(np.exp(-abs(np.log(b1) - np.log(b2)) / sigma_log))
+    return float(np.exp(-abs(np.log(b1) - np.log(b2)) / scale_log))
 
 
 def amenity_similarity_vector(target_amenity: str, amenities: np.ndarray) -> np.ndarray:
@@ -55,7 +56,7 @@ def amenity_similarity_vector(target_amenity: str, amenities: np.ndarray) -> np.
 
 
 def price_similarity_vector(
-    target_bill: float, bills: np.ndarray, sigma_log: float = 0.5,
+    target_bill: float, bills: np.ndarray, scale_log: float = 0.5,
 ) -> np.ndarray:
     """Векторизованная sim_p. shape (V,). Корректно обрабатывает NaN/<=0."""
     bills = np.asarray(bills, dtype=np.float64)
@@ -63,7 +64,7 @@ def price_similarity_vector(
     out = np.ones_like(bills, dtype=np.float64)
     if valid.any():
         out[valid] = np.exp(
-            -np.abs(np.log(bills[valid]) - np.log(target_bill)) / sigma_log
+            -np.abs(np.log(bills[valid]) - np.log(target_bill)) / scale_log
         )
     return out
 
@@ -89,7 +90,7 @@ def huff_score_place(
     houses: pd.DataFrame,
     d0_m: float = 500.0,
     beta: float = 3.0,
-    sigma_log: float = 0.5,
+    scale_log: float = 0.5,
     outside_option: float = 0.0,
     radius_cutoff_m: float = 2000.0,
 ) -> float:
@@ -99,7 +100,7 @@ def huff_score_place(
     возвращает километры, поэтому умножаем на 1000 один раз.
 
     Ожидаемые колонки:
-        places: amenity, price_level (avg_bill в рублях),
+        places: amenity, avg_bill (в рублях),
                 rating, reviews_count, lat, lon
         houses: lat, lon, count_people
     """
@@ -107,7 +108,7 @@ def huff_score_place(
 
     sim_a = amenity_similarity_vector(target["amenity"], places["amenity"].values)
     sim_p = price_similarity_vector(
-        target["price_level"], places["price_level"].values, sigma_log=sigma_log,
+        target["avg_bill"], places["avg_bill"].values, scale_log=scale_log,
     )
 
     r_adj = bayesian_rating(
@@ -139,7 +140,7 @@ def huff_scores_all_places(
     houses: pd.DataFrame,
     d0_m: float = 500.0,
     beta: float = 3.0,
-    sigma_log: float = 0.5,
+    scale_log: float = 0.5,
     outside_option: float = 0.0,
     radius_cutoff_m: float = 2000.0,
 ) -> np.ndarray:
@@ -156,7 +157,7 @@ def huff_scores_all_places(
         return np.array([], dtype=np.float64)
 
     amen = places["amenity"].values
-    bills = places["price_level"].values.astype(np.float64)
+    bills = places["avg_bill"].values.astype(np.float64)
 
     r_adj = bayesian_rating(
         places["rating"].values, places["reviews_count"].values,
@@ -173,7 +174,7 @@ def huff_scores_all_places(
     scores = np.zeros(V, dtype=np.float64)
     for j in range(V):
         sim_a = amenity_similarity_vector(amen[j], amen)
-        sim_p = price_similarity_vector(bills[j], bills, sigma_log=sigma_log)
+        sim_p = price_similarity_vector(bills[j], bills, scale_log=scale_log)
         A_eff = g * sim_a * sim_p  # (V,)
 
         keep = dists[:, j] <= radius_cutoff_m
@@ -202,7 +203,7 @@ def rank_by_score(
     places: Iterable[Place],
     d0_m: float = 500.0,
     beta: float = 3.0,
-    sigma_log: float = 0.5,
+    scale_log: float = 0.5,
     outside_option: float = 0.0,
     radius_cutoff_m: float = 2000.0,
 ) -> list[Place]:
@@ -230,7 +231,7 @@ def rank_by_score(
             extra_rows.append({
                 "amenity": p.amenity, "name": p.name,
                 "rating": p.rating or 0.0, "reviews_count": 0,
-                "price_level": p.price_level, "lat": p.lat, "lon": p.lon,
+                "avg_bill": p.avg_bill, "lat": p.lat, "lon": p.lon,
             })
             idx = len(places_df) + len(extra_rows) - 1
             lat_lon_to_idx[(p.lat, p.lon)] = idx
@@ -246,7 +247,7 @@ def rank_by_score(
     # случая глобальный вариант проще и предсказуемее по сложности.
     all_scores = huff_scores_all_places(
         places_df, houses_df,
-        d0_m=d0_m, beta=beta, sigma_log=sigma_log,
+        d0_m=d0_m, beta=beta, scale_log=scale_log,
         outside_option=outside_option, radius_cutoff_m=radius_cutoff_m,
     )
 

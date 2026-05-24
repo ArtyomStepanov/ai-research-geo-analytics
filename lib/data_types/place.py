@@ -8,7 +8,7 @@ class Place(BaseModel):
     amenity: str | None = None
     distance_km: float | None = None
     rating: float | None = None
-    price_level: float | None = None
+    avg_bill: float | None = None
     score: float | None = None
     lat: float
     lon: float

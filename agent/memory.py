@@ -66,7 +66,11 @@ class PersistedMemory(ConversationMemory):
             # Гарантируем, что system prompt всегда первый
             if not self.history or self.history[0].get("role") != "system":
                 self.history.insert(0, {"role": "system", "content": self.system_prompt})
+            # Убираем висящие tool_call-сообщения без ответов (вызвали бы ошибку API)
+            while self.history and self.history[-1].get("tool_calls"):
+                self.history.pop()
 
     def save(self):
-        """Сохраняет полную историю в БД."""
-        save_chat_history(self.chat_id, self.history)
+        """Сохраняет историю в БД — без результатов tool-вызовов (они могут быть огромными)."""
+        without_results = [m for m in self.history if m.get("role") != "tool"]
+        save_chat_history(self.chat_id, without_results)

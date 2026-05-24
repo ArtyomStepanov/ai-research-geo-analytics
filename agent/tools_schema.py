@@ -19,66 +19,66 @@ TOOLS = [
     to_tool_schema(
         GeocodeRequest,
         "geocode",
-        "Convert a place name or landmark (toponym) to lat/lon coordinates. "
-        "Call this FIRST when the user mentions a place name instead of numeric coordinates, "
-        "then pass the returned lat/lon to search_places or nearest_places."
+        "Преобразует название места или ориентира (топоним) в координаты lat/lon. "
+        "Вызывай ПЕРВЫМ, если пользователь указал название места вместо числовых координат, "
+        "затем передай полученные lat/lon в search_places или nearest_places."
     ),
     to_tool_schema(
         SearchPlacesRequest,
         "search_places",
-        "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset."
-        "Optionally filter by distance from an anchor point."
+        "Поиск объектов инфраструктуры (кафе, ресторан, фастфуд, аптека, бар, ...) из локального датасета. "
+        "Опционально фильтрует по расстоянию от опорной точки."
     ),
     to_tool_schema(
         NearestPlacesRequest,
         "nearest_places",
-        "Search N amenities (cafe, restaurant, pharmacy, bar, ...) near the point from the local dataset"
+        "Поиск N ближайших объектов инфраструктуры (кафе, ресторан, фастфуд, аптека, бар, ...) рядом с точкой из локального датасета."
     ),
     to_tool_schema(
         SearchByNameRequest,
         "search_by_name",
-        "Search amenities (cafe, restaurant, pharmacy, bar, ...) from the local dataset by their name."
-        "Optionally filter by distance from an anchor point."
+        "Поиск объектов инфраструктуры (кафе, ресторан, фастфуд, аптека, бар, ...) из локального датасета по названию. "
+        "Опционально фильтрует по расстоянию от опорной точки."
     ),
     to_tool_schema(
         RankPlacesRequest,
         "rank_places",
-        "Rank a previously returned list of places."
-        "Strategy is either 'distance' (ascending distance_km) or 'score' (composite rating - distance)."
+        "Ранжирует ранее полученный список мест. "
+        "Стратегия: 'distance' (по возрастанию distance_km) или 'score' (по модели Хаффа)."
     ),
     to_tool_schema(
         NearestHexesRequest,
         "nearest_hexes",
-        "Get opportunity-grid metrics for a hex and its neighbours. "
-        "radius=1 returns target ('C') + 6 neighbours each with a 'label' field: "
-        "'N'/'NE'/'SE'/'S'/'SW'/'NW' — compass direction from center. "
-        "USE THESE LABELS in responses instead of raw hex IDs. "
-        "Requires opportunity_grid to have been computed."
+        "Возвращает метрики opportunity-grid для гексагона и его соседей. "
+        "radius=1 возвращает целевой гекс ('Ц') + 6 соседей, каждый с полем 'label': "
+        "'С'/'В'/'ЮВ'/'Ю'/'З'/'СЗ' — направление по компасу от центра. "
+        "ИСПОЛЬЗУЙ ЭТИ МЕТКИ в ответах и пиши hex_id в скобках рядом с меткой: «Гекс СВ (hex_id)». "
+        "Требует предварительного вычисления opportunity_grid."
     ),
     to_tool_schema(
         OpportunityGridRequest,
         "opportunity_grid",
-        "Compute a hex-grid opportunity map for a category. "
-        "Use strategy='implant' for site-selection queries: 'where to open', 'underserved areas', "
-        "'low coverage', 'find best location', 'where do we lack X'. "
-        "Use strategy='aggregate' for competitive-landscape queries: 'show competitor positions', "
-        "'market saturation', 'where are competitors strong', 'current competitor landscape'."
+        "Вычисляет карту возможностей на гексагональной сетке для категории. "
+        "Стратегия 'implant' — для задач выбора локации: 'где открыть', 'недообслуживаемые зоны', "
+        "'низкое покрытие', 'найти лучшее место', 'где нам не хватает X'. "
+        "Стратегия 'aggregate' — для анализа конкурентной среды: 'показать позиции конкурентов', "
+        "'насыщенность рынка', 'где конкуренты сильны', 'текущий ландшафт конкурентов'."
     ),
     to_tool_schema(
         FilterRequest,
         "filter_places",
-        "Filters places by category or rating."
+        "Фильтрует места по категории или рейтингу."
     ),
     to_tool_schema(
         DistanceRequest,
         "compute_distance",
-        "Compute distance between two points. Returns number."
+        "Вычисляет расстояние между двумя точками. Возвращает число."
     ),
     to_tool_schema(
         HeatmapRequest,
         "build_heatmap",
-        "Render a heatmap of places already retrieved by search_places/nearest_places. "
-        "Do NOT use for coverage or opportunity analysis — use opportunity_grid instead."
+        "Строит тепловую карту мест, уже полученных через search_places/nearest_places. "
+        "НЕ использовать для анализа покрытия или возможностей — для этого используй opportunity_grid."
     ),
 ]
 

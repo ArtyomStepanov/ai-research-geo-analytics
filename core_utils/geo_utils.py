@@ -7,6 +7,9 @@ import networkx as nx
 import numpy as np
 import osmnx as ox
 
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+
 ox.settings.use_cache = True
 
 EARTH_R = 6371.0
@@ -214,9 +217,6 @@ def geocode(location: str, city_hint: str = "") -> tuple[float, float] | None:
     TODO: RateLimiter для многократного вызова функции за 1 сек.
     TODO: cache
     """
-    from geopy.geocoders import Nominatim
-    from geopy.exc import GeocoderTimedOut, GeocoderServiceError
-
     query = f"{location}, {city_hint}".strip(", ") if city_hint else location
     geolocator = Nominatim(user_agent="geo-analytics-agent/1.0", timeout=5)
     

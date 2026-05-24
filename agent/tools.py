@@ -120,12 +120,12 @@ def _tool_geocode(args: dict[str, Any]) -> dict:
 # col = j - origin_j  (col<0 = North, col>0 = South)
 # For H3 ring-1, the 6 (dr, dc) offsets map to these compass labels.
 _IJ_TO_DIRECTION: dict[tuple[int, int], str] = {
-    ( 0, -1): "N",
-    (+1,  0): "E",
-    (+1, +1): "SE",
-    ( 0, +1): "S",
-    (-1,  0): "W",
-    (-1, -1): "NW",
+    ( 0, -1): "С",
+    (+1,  0): "В",
+    (+1, +1): "ЮВ",
+    ( 0, +1): "Ю",
+    (-1,  0): "З",
+    (-1, -1): "СЗ",
 }
 
 
@@ -155,7 +155,7 @@ def _tool_nearest_hexes(args: dict[str, Any]) -> dict:
     target_dict = None
     if target_cell is not None:
         target_dict = _slim(target_cell)
-        target_dict["label"] = "C"
+        target_dict["label"] = "Ц"
 
     neighbors: list[Hex] = []
     for h in h3.grid_disk(hex_id, radius):
@@ -167,11 +167,13 @@ def _tool_nearest_hexes(args: dict[str, Any]) -> dict:
             dr = neighbor_cell.row - target_cell.row
             dc = neighbor_cell.col - target_cell.col
             label = _IJ_TO_DIRECTION.get((dr, dc), "?")
-        neighbors.append(neighbor_cell.model_copy(update={"label": label}))
+        slim = _slim(neighbor_cell)
+        slim["label"] = label
+        neighbors.append(slim)
 
     try:
         import streamlit as st
-        st.session_state["highlighted_hexes"] = {hex_id} | {n.hex_id for n in neighbors}
+        st.session_state["highlighted_hexes"] = {hex_id} | {n["hex_id"] for n in neighbors}
     except Exception:
         pass
 

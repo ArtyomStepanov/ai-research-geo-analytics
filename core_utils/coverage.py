@@ -61,13 +61,13 @@ def _implant_scores(
     houses_df: pd.DataFrame,
     target_amenity: str,
     target_avg_bill: float,
-    target_rating: float,
-    target_reviews: int,
     d0_m: float,
     beta: float,
-    sigma_log: float,
+    scale_log: float,
     outside_option: float,
     radius_cutoff_m: float,
+    target_rating: float = 4.4,
+    target_reviews: int = 5,
     chunk_size: int = 500,
 ) -> np.ndarray:
     """Для каждого гекса считает scoreR гипотетического заведения в его центре."""
@@ -75,14 +75,14 @@ def _implant_scores(
     # эффективные привлекательности конкурентов с т.з. target-категории.
     sim_a = amenity_similarity_vector(target_amenity, places_df["amenity"].values)
     sim_p = price_similarity_vector(
-        target_avg_bill, places_df["price_level"].values, sigma_log=sigma_log,
+        target_avg_bill, places_df["avg_bill"].values, scale_log=scale_log,
     )
     r_adj = bayesian_rating(
         places_df["rating"].values, places_df["reviews_count"].values,
     )
     A_competitors = attractiveness(r_adj, beta=beta) * sim_a * sim_p  # (V,)
 
-    d_hv_m = 1000.0 * haversine_km_matrix(
+    d_hv_m = haversine_km_matrix(
         houses_df["lat"].values[:, None], houses_df["lon"].values[:, None],
         places_df["lat"].values[None, :], places_df["lon"].values[None, :],
     )  # (H_house, V)
@@ -105,7 +105,7 @@ def _implant_scores(
         end = min(start + chunk_size, H_hex)
         centers_chunk = hex_centers[start:end]  # (C, 2)
 
-        d_hh_m = 1000.0 * haversine_km_matrix(
+        d_hh_m = haversine_km_matrix(
             houses_df["lat"].values[:, None], houses_df["lon"].values[:, None],
             centers_chunk[:, 0][None, :], centers_chunk[:, 1][None, :],
         )  # (H_house, C)
@@ -130,7 +130,7 @@ def _aggregate_scores(
     d_w_m: float,
 ) -> np.ndarray:
     """Сумма scoreR заведений с экспоненциальным затуханием от центра гекса."""
-    d_m = 1000.0 * haversine_km_matrix(
+    d_m = haversine_km_matrix(
         hex_centers[:, 0][:, None], hex_centers[:, 1][:, None],
         places_df["lat"].values[None, :], places_df["lon"].values[None, :],
     )  # (H_hex, V)
@@ -163,13 +163,13 @@ def compute_opportunity_grid(
     # Параметры Хаффа
     d0_m: float = 500.0,
     beta: float = 3.0,
-    sigma_log: float = 0.5,
+    scale_log: float = 0.5,
     outside_option: float = 0.0,
     radius_cutoff_m: float = 2000.0,
     # Параметры "implant"
     target_avg_bill: float = 800.0,
-    target_rating: float = 4.3,
-    target_reviews: int = 50,
+    target_rating: float = 4.4,
+    target_reviews: int = 10,
     # Параметр "aggregate"
     d_w_m: float = 300.0,
     # Фильтрация результата
@@ -258,7 +258,7 @@ def compute_opportunity_grid(
             target_avg_bill=target_avg_bill,
             target_rating=target_rating,
             target_reviews=target_reviews,
-            d0_m=d0_m, beta=beta, sigma_log=sigma_log,
+            d0_m=d0_m, beta=beta, scale_log=scale_log,
             outside_option=outside_option,
             radius_cutoff_m=radius_cutoff_m,
         )
@@ -270,7 +270,7 @@ def compute_opportunity_grid(
         if cat_mask.any():
             scores_full = huff_scores_all_places(
                 places_df, houses_df,
-                d0_m=d0_m, beta=beta, sigma_log=sigma_log,
+                d0_m=d0_m, beta=beta, scale_log=scale_log,
                 outside_option=outside_option,
                 radius_cutoff_m=radius_cutoff_m,
             )
@@ -282,16 +282,13 @@ def compute_opportunity_grid(
             venue_scores=venue_scores,
             d_w_m=d_w_m,
         )
-        # Инвертируем: высокий raw = сильные конкуренты = плохое место.
-        # После инверсии opportunity_score везде означает «высокий = выгодно».
-        if opportunity.max() > 0:
-            opportunity = opportunity.max() - opportunity
 
     # Сглаживание по соседним гексам: убирает резкие переходы цвета.
     opportunity = _smooth_hex_scores(opportunity, list(agg["hex_id"]))
 
     agg["opportunity_score"] = opportunity
     agg["demand_score"] = agg["demand_people"]
+
     agg["is_visible"] = (
         (agg["total_places"] > 0) & (agg["opportunity_score"] > visibility_threshold)
     )

@@ -68,7 +68,7 @@ def _offline_route(query: str) -> str:
         )
 
     category = None
-    for c in ("cafe", "restaurant", "pharmacy", "bar"):
+    for c in ("cafe", "restaurant", "fastfood", "pharmacy", "bar"):
         if c in q:
             category = c
             break
@@ -93,7 +93,7 @@ def _llm_client_and_model():
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
     model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
-    return OpenAI(base_url=base_url, api_key=api_key), model
+    return OpenAI(base_url=base_url, api_key=api_key, timeout=90.0), model
 
 
 def run(query: str, chat_id: str) -> str:
@@ -127,7 +127,7 @@ def run(query: str, chat_id: str) -> str:
             model=model,
             messages=messages,
             tools=TOOLS,
-            max_tokens=65536,
+            max_tokens=4096,
             tool_choice="auto",
             temperature=0.3,
         )
@@ -152,12 +152,18 @@ def run(query: str, chat_id: str) -> str:
 
             if name == "opportunity_grid" and isinstance(result, list):
                 save_opportunity_grid(chat_id, {"cells": [c.model_dump() for c in result], "args": dict(args)})
-
-            # Добавляем результат инструмента в память
-            memory.add_tool_result(
-                call.id,
-                json.dumps(result, ensure_ascii=False, default=str)
-            )
+                top = sorted(result, key=lambda c: c.opportunity_score, reverse=True)[:20]
+                summary = {
+                    "total_cells": len(result),
+                    "top_cells": [c.model_dump(exclude={"boundary", "row", "col", "is_visible", "label"}) for c in top],
+                    "note": "Full grid is in UI. Use nearest_hexes to explore specific cells.",
+                }
+                memory.add_tool_result(call.id, json.dumps(summary, ensure_ascii=False))
+            else:
+                memory.add_tool_result(
+                    call.id,
+                    json.dumps(result, ensure_ascii=False, default=str)
+                )
 
         memory.save()  # Persist after each complete tool-call iteration
 

@@ -7,6 +7,7 @@ from typing import Iterable
 import folium
 import matplotlib
 import matplotlib.colors as mcolors
+import numpy as np
 from folium.plugins import HeatMap
 
 from lib.data_types import Place, Hex
@@ -30,11 +31,11 @@ def _add_places(places: list[Place] | None, m: folium.Map) -> None:
             html.escape(str(p.amenity)),
         ]
         if p.rating is not None:
-            parts.append(f"rating: {p.rating}")
+            parts.append(f"рейтинг: {p.rating}")
         if p.score is not None:
-            parts.append(f"score: {p.score}")
-        if p.price_level is not None:
-            parts.append(f"price: {p.price_level}₽")
+            parts.append(f"скор: {p.score}")
+        if p.avg_bill is not None:
+            parts.append(f"цена: {p.avg_bill}₽")
         folium.CircleMarker(
             location=(p.lat, p.lon),
             radius=_BASE_CIRCLE_RADIUS,
@@ -108,30 +109,48 @@ def opportunity_hex_map(
     cells: list[Hex],
     places: list[Place] | None = None,
     zoom_start: int = 13,
-    max_demand: float | None = None,
-    min_demand: float | None = None,
+    max_demand: float | None = None,        # deprecated: см. half_range
+    min_demand: float | None = None,        # deprecated: см. half_range
     color_metric: str = "opportunity_score",  # main B2B metric
     colormap: str = "RdYlGn",                 # red=bad, green=good
     opacity_range: tuple[float, float] = (0.3, 0.65),
     highlighted_hex_ids: set[str] | None = None,
+    pinned_hex_id: str | None = None,
+    threshold: float | None = None,
+    half_range: float | None = None,
 ) -> folium.Map:
-    """Отрисовать H3-сетку с градиентной заливкой.
+    """Отрисовать H3-сетку с градиентной заливкой относительно порога.
+
+    Цвет гекса определяется тем, насколько его метрика отличается от
+    `threshold`: ровно на пороге — нейтрально-жёлтый, выше — зеленее,
+    ниже — краснее. На отклонении >= `half_range` цвет полностью насыщен.
 
     Args:
         cells: Список гексов из compute_opportunity_grid.
         places: Конкуренты для отрисовки точками поверх гексов.
         zoom_start: Начальный зум карты.
-        max_demand/min_demand: Границы нормализации (авто, если None).
         color_metric: Поле для расчёта цвета:
-            - "opportunity_score" → главная B2B-метрика (demand - competition).
-              Высокая = хорошее место под новую точку. По умолчанию.
+            - "opportunity_score" → главная B2B-метрика. По умолчанию.
             - "demand_score" → POI кроме конкурентов (прокси трафика).
-            - "competitor_density" → насыщенность рынка.
+            - "competitor_density" → насыщенность рынка (используй RdYlGn_r).
         colormap: Название matplotlib colormap.
-            Для opportunity_score используй "RdYlGn" (красный→зелёный).
-            Для competitor_density — "RdYlGn_r" (зелёный→красный, т.к. высокая
-            конкуренция = плохо).
-        opacity_range: (min_opacity, max_opacity) для видимых ячеек.
+            Для opportunity_score — "RdYlGn" (красный→жёлтый→зелёный).
+            Для competitor_density — "RdYlGn_r".
+        opacity_range: (min_opacity, max_opacity). Прозрачность определяется
+            `demand_score` (не opportunity): нет жителей → прозрачнее.
+        highlighted_hex_ids: Если задано, эти гексы выделяются обводкой,
+            остальные становятся блёкло-серыми.
+        threshold: Значение метрики, в котором гекс окрашен нейтрально.
+            По умолчанию — медиана видимых гексов (тогда покраска просто
+            показывает «лучше/хуже типичного», без абсолютного смысла).
+            Передавай явно для бизнес-порога (например, средний scoreR
+            существующих заведений категории).
+        half_range: На сколько метрика должна отклониться от `threshold`,
+            чтобы цвет насытился полностью. По умолчанию — 90-й перцентиль
+            |value - threshold| среди видимых гексов.
+        max_demand / min_demand: deprecated. Если заданы оба и `half_range`
+            не указан, используются для вычисления симметричного полудиапазона
+            вокруг threshold.
     """
     if not cells:
         return folium.Map(location=(0, 0), zoom_start=2)
@@ -145,19 +164,33 @@ def opportunity_hex_map(
     m = folium.Map(location=center, zoom_start=zoom_start)
 
     # Значения метрики для расчёта цвета
-    values = [getattr(c, color_metric, c.opportunity_score) for c in cells]
+    values = np.array(
+        [getattr(c, color_metric, c.opportunity_score) for c in cells],
+        dtype=np.float64,
+    )
 
-    # Нормализация по ВИДИМЫМ ячейкам, чтобы выбросы из «контекстных»
-    # пустых гексов не сжимали шкалу
-    visible_vals = [v for v, c in zip(values, cells) if c.is_visible]
-    if not visible_vals:
-        visible_vals = values
-    min_val = min_demand if min_demand is not None else min(visible_vals)
-    max_val = max_demand if max_demand is not None else max(visible_vals)
-    span = max_val - min_val + 1e-6
+    # Видимые гексы определяют шкалу — пустые «контекстные» не должны её сжимать
+    visible_mask = np.array([c.is_visible for c in cells], dtype=bool)
+    visible_vals = values[visible_mask] if visible_mask.any() else values
+
+    # Точка нейтрали (жёлтый на RdYlGn). Если не задана — медиана видимых.
+    if threshold is None:
+        threshold = float(np.median(visible_vals))
+
+    # Полудиапазон до полного насыщения цвета
+    if half_range is None:
+        if min_demand is not None and max_demand is not None:
+            # Обратная совместимость со старыми вызовами
+            half_range = max(threshold - min_demand, max_demand - threshold)
+        else:
+            half_range = float(np.percentile(np.abs(visible_vals - threshold), 90))
+    if half_range <= 0:
+        half_range = 1.0  # все scores равны threshold → шкала вырождается в нейтраль
 
     cmap = matplotlib.colormaps[colormap]
-    norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
+    vmin = threshold - half_range
+    vmax = threshold + half_range
+    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=threshold, vmax=vmax)
 
     # Прозрачность определяется спросом (demand_score), а не opportunity.
     # Нет спроса → прозрачный; много жителей → насыщенный цвет.
@@ -178,9 +211,9 @@ def opportunity_hex_map(
                 fill=True,
                 fill_opacity=0.08,
                 popup=(
-                    f"<b>Empty / low activity</b><br>"
-                    f"Total POI: {c.total_places}<br>"
-                    f"Opportunity: {c.opportunity_score:.2f}"
+                    f"<b>Пусто / низкая активность</b><br>"
+                    f"Всего мест: {c.total_places}<br>"
+                    f"Возможность: {c.opportunity_score:.2f}"
                 ),
             ).add_to(m)
             continue
@@ -196,16 +229,18 @@ def opportunity_hex_map(
                 fill_color="#cccccc",
                 fill_opacity=0.10,
                 popup=(
-                    f"<b>Opportunity</b>: {c.opportunity_score:.2f}<br>"
-                    f"Demand: {c.demand_score}<br>"
-                    f"Competitors: {c.competitor_count}<br>"
-                    f"Total POI: {c.total_places}"
+                    f"<b>Возможность</b>: {c.opportunity_score:.2f}<br>"
+                    f"Спрос: {c.demand_score}<br>"
+                    f"Конкуренты: {c.competitor_count}<br>"
+                    f"Всего мест: {c.total_places}"
                 ),
             ).add_to(m)
             continue
 
-        # Видимые гексы: цвет = конкуренция, прозрачность = спрос
-        rgba = cmap(norm(val))
+        # Видимые гексы: цвет = отклонение от threshold, прозрачность = спрос.
+        # TwoSlopeNorm не клипает за пределы [vmin, vmax] — клипаем вручную.
+        val_clipped = float(np.clip(val, vmin, vmax))
+        rgba = cmap(norm(val_clipped))
         color = mcolors.to_hex(rgba[:3])
         demand_norm = (c.demand_score - d_min) / d_span
         opacity = opacity_range[0] + demand_norm * (opacity_range[1] - opacity_range[0])
@@ -218,13 +253,25 @@ def opportunity_hex_map(
             fill_color=color,
             fill_opacity=opacity,
             popup=(
-                f"<b>Opportunity</b>: {c.opportunity_score:.2f}<br>"
-                f"Demand (other POI): {c.demand_score}<br>"
-                f"Competitors: {c.competitor_count} "
+                f"<b>Возможность</b>: {c.opportunity_score:.2f}<br>"
+                f"Спрос (др. места): {c.demand_score}<br>"
+                f"Конкуренты: {c.competitor_count} "
                 f"(avg ⭐ {c.competitor_avg_rating:.1f})<br>"
-                f"Total POI: {c.total_places}"
+                f"Всего мест: {c.total_places}"
             ),
         ).add_to(m)
+
+    if pinned_hex_id:
+        for c in cells:
+            if c.hex_id == pinned_hex_id:
+                folium.Polygon(
+                    locations=[list(pt) for pt in c.boundary],
+                    color="#FF6B00",
+                    weight=5,
+                    fill=False,
+                    popup=f"<b>📍 {c.hex_id}</b>",
+                ).add_to(m)
+                break
 
     _add_places(places, m)
     return m

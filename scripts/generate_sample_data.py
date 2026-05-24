@@ -21,20 +21,22 @@ CENTER = (40.1772, 44.5152)
 # Несколько кластеров с разной плотностью разных категорий.
 # Это даёт нетривиальный паттерн "underserved areas" для демо.
 NEIGHBORHOODS = [
-    # name, lat, lon, mix per amenity (cafe, restaurant, pharmacy, bar)
-    ("Center",      40.1810, 44.5140, dict(cafe=120, restaurant=120, pharmacy=15, bar=40)),
-    ("Arabkir",     40.2050, 44.5210, dict(cafe=50,  restaurant=40,  pharmacy=25, bar=10)),
-    ("Kentron-S",   40.1690, 44.5090, dict(cafe=40,  restaurant=50,  pharmacy=10, bar=20)),
-    ("Davtashen",   40.2180, 44.4720, dict(cafe=10,  restaurant=15,  pharmacy=4,  bar=2)),
-    ("Erebuni",     40.1450, 44.5350, dict(cafe=15,  restaurant=20,  pharmacy=6,  bar=3)),
-    ("Malatia",     40.1620, 44.4670, dict(cafe=20,  restaurant=25,  pharmacy=12, bar=5)),
-    ("Nor-Nork",    40.1950, 44.5650, dict(cafe=25,  restaurant=25,  pharmacy=8,  bar=4)),
+    # name, lat, lon, mix per amenity (cafe, restaurant, fastfood, pharmacy, bar)
+    ("Center",      40.1810, 44.5140, dict(cafe=120, restaurant=120, fastfood=60, pharmacy=15, bar=40)),
+    ("Arabkir",     40.2050, 44.5210, dict(cafe=50,  restaurant=40,  fastfood=20, pharmacy=25, bar=10)),
+    ("Kentron-S",   40.1690, 44.5090, dict(cafe=40,  restaurant=50,  fastfood=25, pharmacy=10, bar=20)),
+    ("Davtashen",   40.2180, 44.4720, dict(cafe=10,  restaurant=15,  fastfood=8,  pharmacy=4,  bar=2)),
+    ("Erebuni",     40.1450, 44.5350, dict(cafe=15,  restaurant=20,  fastfood=10, pharmacy=6,  bar=3)),
+    ("Malatia",     40.1620, 44.4670, dict(cafe=20,  restaurant=25,  fastfood=12, pharmacy=12, bar=5)),
+    ("Nor-Nork",    40.1950, 44.5650, dict(cafe=25,  restaurant=25,  fastfood=15, pharmacy=8,  bar=4)),
 ]
 
 CAFE_NAMES = ["Kupatak", "Lumen", "Coffeeshop Co", "Green Bean", "Achajour",
               "Caffeine Lab", "Aperto", "Sketch", "The Espresso", "Sip"]
 RESTAURANT_NAMES = ["Tavern", "Anteb", "Gata House", "Lavash", "Sherep",
                     "Caucasus", "Wine Republic", "Dolmama", "Aregak", "Karas"]
+FASTFOOD_NAMES = ["Burger House", "Pizza Run", "Quick Bite", "Street Grill",
+                  "Hot Dog King", "Wrap & Go", "Falafel Point", "Shawarma Stop"]
 PHARMACY_NAMES = ["Natali Pharm", "Alfa-Farm", "Pharm Express", "Aibolit",
                   "Med Pharm", "Plus Pharm", "Health+", "City Pharm"]
 BAR_NAMES = ["12 Tables", "Calumet", "Stop Club", "Beatles Pub", "Tap",
@@ -43,6 +45,7 @@ BAR_NAMES = ["12 Tables", "Calumet", "Stop Club", "Beatles Pub", "Tap",
 NAME_POOL = {
     "cafe": CAFE_NAMES,
     "restaurant": RESTAURANT_NAMES,
+    "fastfood": FASTFOOD_NAMES,
     "pharmacy": PHARMACY_NAMES,
     "bar": BAR_NAMES,
 }
