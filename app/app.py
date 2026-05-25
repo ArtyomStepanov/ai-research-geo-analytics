@@ -39,12 +39,13 @@ from map_visualization import opportunity_hex_map  # noqa: E402
 
 from streamlit_folium import st_folium
 import folium  # noqa: E402
+import re
 import uuid
 
 
 # --- page config ------------------------------------------------------------
 st.set_page_config(
-    page_title="Geo AI Assistant — B2B Site Selection",
+    page_title="Гео ИИ-Ассистент — Выбор локации B2B",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -63,7 +64,15 @@ st.markdown(
 # --- constants --------------------------------------------------------------
 CITY_CENTER = (56.8386, 60.6055)
 DEFAULT_ZOOM = 12
-CATEGORIES = ["cafe", "restaurant", "pharmacy", "bar"]
+CATEGORIES = ["cafe", "restaurant", "fastfood", "pharmacy", "bar", "delivery"]
+CATEGORY_LABELS: dict[str, str] = {
+    "cafe": "кафе",
+    "restaurant": "ресторан",
+    "fastfood": "фастфуд",
+    "pharmacy": "аптека",
+    "bar": "бар",
+    "delivery": "доставка",
+}
 DEFAULT_HEX_RES = 8
 
 
@@ -103,6 +112,15 @@ def _init_state() -> None:
             st.query_params["chat_id"] = chat_id
         st.session_state["chat_id"] = chat_id
 
+    # Клик по hex_id в сообщении агента приходит как ?hex_click=...
+    # Перехватываем, выставляем pinned_hex_id, чистим URL, делаем rerun.
+    # Это даёт тот же эффект, что раньше делала скрытая кнопка под сообщением.
+    clicked_hex = st.query_params.get("hex_click")
+    if clicked_hex:
+        st.session_state["pinned_hex_id"] = clicked_hex
+        del st.query_params["hex_click"]
+        st.rerun()
+
     if "chat_log" not in st.session_state:
         st.session_state["chat_log"] = _load_chat_log_from_db(st.session_state["chat_id"])
     if "selected_category" not in st.session_state:
@@ -111,6 +129,10 @@ def _init_state() -> None:
         st.session_state["pending_query"] = None
     if "selected_hex" not in st.session_state:
         st.session_state["selected_hex"] = None
+    if "highlighted_hexes" not in st.session_state:
+        st.session_state["highlighted_hexes"] = set()
+    if "pinned_hex_id" not in st.session_state:
+        st.session_state["pinned_hex_id"] = None
     if not st.session_state.get("opportunity_grid"):
         _restore_opportunity_grid(st.session_state["chat_id"])
         if st.session_state.get("opportunity_grid"):
@@ -169,18 +191,18 @@ def _format_hex_query(cell: Hex, category: str) -> str:
 def render_sidebar() -> None:
     """Read-only дашборд: показывает текущий контекст агента."""
     with st.sidebar:
-        st.header("Agent context")
+        st.header("Контекст агента")
         st.caption("Read-only — обновляется по мере диалога")
 
         # --- City ----------------------------------------------------------
-        st.markdown("**City**")
+        st.markdown("**Город**")
         st.markdown("Екатеринбург, Россия")
 
         st.divider()
 
         # --- Active analysis -----------------------------------------------
         opp = st.session_state.get("opportunity_grid")
-        st.markdown("**Active analysis**")
+        st.markdown("**Активный анализ**")
 
         if opp and opp.get("cells"):
             args = opp.get("args", {})
@@ -190,34 +212,41 @@ def render_sidebar() -> None:
             n_cells = len(opp["cells"])
             n_visible = sum(1 for c in opp["cells"] if c.is_visible)
 
-            st.markdown(f"**Opportunity grid** · `{category}`")
+            st.markdown(f"**Сетка конкурентов** · `{CATEGORY_LABELS.get(category, category)}`")
             col_a, col_b = st.columns(2)
-            col_a.metric("Total hexes", n_cells)
-            col_b.metric("Visible", n_visible)
+            col_a.metric("Всего гексов", n_cells)
+            col_b.metric("Видимых", n_visible)
 
             st.caption(f"H3 resolution: **{resolution}**")
             hex_ref = HEX_SIZE_REFERENCE.get(resolution)
             if hex_ref:
                 st.caption(f"↳ {hex_ref}")
             if threshold > 0:
-                st.caption(f"Demand threshold: {threshold}")
+                st.caption(f"Порог спроса: {threshold}")
         else:
-            st.markdown("_No analysis yet._")
-            st.caption("Спросите агента или нажмите Quick action.")
+            st.markdown("_Анализ ещё не запущен._")
+            st.caption("Спросите агента или нажмите быстрое действие.")
 
         st.divider()
 
         # --- Heatmap state (если агент строил) ----------------------------
         hm = st.session_state.get("agent_heatmap")
         if hm:
-            st.markdown("**Heatmap**")
-            st.caption(f"Points: {len(hm.get('points', []))}")
+            st.markdown("**Тепловая карта**")
+            st.caption(f"Точек: {len(hm.get('points', []))}")
             st.divider()
 
 
-        st.markdown("**Map target category**")
-        st.markdown(f"🎯 `{st.session_state['selected_category']}`")
+        st.markdown("**Категории на карте**")
+        st.markdown(f"🎯 `{CATEGORY_LABELS.get(st.session_state['selected_category'], st.session_state['selected_category'])}`")
         st.caption("Категория конкурентов на карте")
+
+        # --- DEBUG: pinned_hex_id (можно удалить после проверки) -----------
+        pinned_dbg = st.session_state.get("pinned_hex_id")
+        st.caption(f"🔧 pinned: `{pinned_dbg}`")
+        if pinned_dbg and opp and opp.get("cells"):
+            in_grid = any(c.hex_id == pinned_dbg for c in opp["cells"])
+            st.caption(f"🔧 в сетке: `{in_grid}`")
 
 
 # --- map rendering ----------------------------------------------------------
@@ -229,10 +258,33 @@ def _build_map() -> folium.Map:
         cells = opp_config["cells"]
         category = st.session_state["selected_category"]
         competitors = search_places(category=[category], limit=500)
+        highlighted = st.session_state.get("highlighted_hexes") or None
+        pinned = st.session_state.get("pinned_hex_id") or None
+
+        strategy = opp_config.get("args", {}).get("strategy", "implant")
+        if strategy == "aggregate":
+            # Высокий agg-score = сильные конкуренты вокруг = красный.
+            # Инвертируем палитру, метрика та же.
+            color_kwargs: dict = {
+                "color_metric": "opportunity_score",
+                "colormap": "RdYlGn_r",
+            }
+        else:  # implant
+            # Высокий opportunity_score = много клиентов гипотетическому
+            # заведению = зелёный.
+            color_kwargs = {
+                "color_metric": "opportunity_score",
+                "colormap": "RdYlGn",
+            }
+
         fmap = opportunity_hex_map(
             cells,
             places=competitors,
             zoom_start=DEFAULT_ZOOM,
+            highlighted_hex_ids=highlighted,
+            pinned_hex_id=pinned,
+            demand_threshold=50.0,
+            **color_kwargs,
         )
         return fmap
 
@@ -246,11 +298,28 @@ def render_map_fragment() -> None:
     Клик по гексу → определяем hex_id → сохраняем в selected_hex →
     rerun → правая колонка показывает карточку с метриками.
     """
+    if st.session_state.get("highlighted_hexes"):
+        if st.button("← Вся карта", key="reset_highlight"):
+            st.session_state["highlighted_hexes"] = set()
+            st.session_state["pinned_hex_id"] = None
+            st.rerun()
+
     fmap = _build_map()
 
+    # ВАЖНО про key у st_folium:
+    # Компонент `st_folium` кэширует положение карты (центр/зум) между ререндерами
+    # внутри одного и того же key. Если key не меняется, новые `location`/`zoom_start`,
+    # переданные в folium.Map, игнорируются — карта остаётся там, где её последним
+    # сдвинул пользователь. Поэтому мы включаем в key и `pinned`, и хэш набора
+    # подсвеченных гексов: как только меняется любое из этих состояний (а
+    # это ровно тот момент, когда мы хотим переехать на новый гекс), key
+    # меняется → компонент пересоздаётся → подхватывает новый центр карты.
+    pinned = st.session_state.get("pinned_hex_id") or "none"
+    highlighted = st.session_state.get("highlighted_hexes") or set()
+    highlighted_key = str(hash(frozenset(highlighted))) if highlighted else "all"
     map_state = st_folium(
         fmap,
-        key="main_map",
+        key=f"main_map_{pinned}_{highlighted_key}",
         height=600,
         use_container_width=True,
         returned_objects=["last_object_clicked", "last_clicked"],
@@ -265,6 +334,9 @@ def render_map_fragment() -> None:
             cell = _find_hex_by_click(lat, lng)
             if cell is not None:
                 st.session_state["selected_hex"] = cell
+                # ВАЖНО: не сбрасываем pinned_hex_id здесь. Клик по карте
+                # выбирает гекс в карточку (selected_hex), а pinned_hex_id —
+                # это маркер из чата (контур на карте). Они независимы.
                 st.rerun()
             # Если клик не попал в гекс (например, на маркер конкурента) —
             # тихо игнорируем. Можно добавить отдельный popup, но это уже сверху.
@@ -272,12 +344,14 @@ def render_map_fragment() -> None:
 
 # --- chat panel -------------------------------------------------------------
 def _send_to_agent(query: str) -> None:
+    st.session_state.pop("highlighted_hexes", None)
+    st.session_state["pinned_hex_id"] = None
     chat_id = st.session_state["chat_id"]
     try:
         run_agent(query, chat_id=chat_id)
     except Exception as exc:  # noqa: BLE001
         st.session_state["chat_log"].append({"role": "user", "content": query})
-        st.session_state["chat_log"].append({"role": "assistant", "content": f"⚠️ Agent error: {exc}"})
+        st.session_state["chat_log"].append({"role": "assistant", "content": f"⚠️ Ошибка агента: {exc}"})
         return
     st.session_state["chat_log"] = _load_chat_log_from_db(chat_id)
     _restore_opportunity_grid(chat_id)
@@ -299,34 +373,34 @@ def render_hex_card() -> None:
     # Визуальная подсказка: зелёный — хорошее место, красный — плохое
     if opp_score > 5:
         verdict_emoji = "🟢"
-        verdict_text = "Promising location"
+        verdict_text = "Перспективная локация"
     elif opp_score > 0:
         verdict_emoji = "🟡"
-        verdict_text = "Mixed signals"
+        verdict_text = "Смешанные сигналы"
     else:
         verdict_emoji = "🔴"
-        verdict_text = "Saturated / weak"
+        verdict_text = "Насыщено / слабо"
 
     with st.container(border=True):
-        st.markdown(f"### {verdict_emoji} Selected hex")
+        st.markdown(f"### {verdict_emoji} Выбранный гекс")
         st.caption(
-            f"**{verdict_text}** for opening a new `{cat}` · "
+            f"**{verdict_text}** для открытия `{CATEGORY_LABELS.get(cat, cat)}` · "
             f"`{cell.center_lat:.4f}, {cell.center_lon:.4f}`"
         )
 
         m1, m2, m3 = st.columns(3)
         m1.metric(
-            "Opportunity",
+            "Возможность",
             f"{opp_score:.1f}",
             help="demand_score − competitor_density. Выше = лучше место.",
         )
         m2.metric(
-            "Competitors",
+            "Конкуренты",
             cell.competitor_count,
-            help=f"Существующие {cat} в этом гексе",
+            help=f"Существующие {CATEGORY_LABELS.get(cat, cat)} в этом гексе",
         )
         m3.metric(
-            "Total POI",
+            "Всего мест",
             cell.total_places,
             help="Любые места — прокси трафика и жизни района",
         )
@@ -339,7 +413,7 @@ def render_hex_card() -> None:
 
         btn_ask, btn_dismiss = st.columns([2, 1])
         if btn_ask.button(
-            "🔍 Ask agent about this area",
+            "🔍 Спросить агента об этой зоне",
             use_container_width=True,
             type="primary",
             key="hex_card_ask",
@@ -349,12 +423,64 @@ def render_hex_card() -> None:
             st.rerun()
 
         if btn_dismiss.button(
-            "✕ Dismiss",
+            "✕ Закрыть",
             use_container_width=True,
             key="hex_card_dismiss",
         ):
             st.session_state["selected_hex"] = None
             st.rerun()
+
+
+_HEX_ID_RE = re.compile(r'\b([0-9a-f]{15})\b')
+
+
+def _hex_button_label(hex_id: str) -> str:
+    grid = st.session_state.get("opportunity_grid")
+    if grid:
+        for cell in grid.get("cells", []):
+            if cell.hex_id == hex_id:
+                return f"Гекс [{cell.label}]" if cell.label else f"{hex_id[:4]}…{hex_id[-4:]}"
+    return f"{hex_id[:4]}…{hex_id[-4:]}"
+
+
+# Injected once per page: MutationObserver that hides all buttons whose label
+# is exactly a 15-char hex string (our hidden trigger buttons).
+# УДАЛЕНО: больше не нужно — клики по hex_id обрабатываются через query_params,
+# скрытые кнопки больше не создаются.
+
+
+def _render_chat_message(msg: dict) -> None:
+    content = msg["content"]
+    if msg["role"] != "assistant":
+        st.markdown(content)
+        return
+
+    # Если в сообщении нет hex_id — обычный markdown.
+    if not _HEX_ID_RE.search(content):
+        st.markdown(content)
+        return
+
+    chat_id = st.session_state.get("chat_id", "")
+
+    # Превращаем 15-hex-id в обычные ссылки.
+    # Ключевой момент: target="_top" — нативный HTML-механизм, который
+    # инструктирует браузер открыть ссылку в top-level окне, а не в текущем
+    # iframe. Работает в sandbox БЕЗ JS-навигации (которая блокируется).
+    # Same-tab гарантирован — ни target="_blank", ни window.open() нет.
+    def _make_hex_link(m: re.Match) -> str:
+        hid = m.group(1)
+        href = f"?chat_id={chat_id}&hex_click={hid}"
+        return (
+            f'<a href="{href}" target="_top" '
+            f'title="{_hex_button_label(hid)}" '
+            f'style="color:#FF8C00;font-family:monospace;background:#fff3e0;'
+            f'padding:1px 5px;border-radius:3px;cursor:pointer;font-size:0.9em;'
+            f'text-decoration:none">'
+            f'{hid}</a>'
+        )
+
+    styled = _HEX_ID_RE.sub(_make_hex_link, content)
+    st.markdown(styled, unsafe_allow_html=True)
 
 
 def render_chat_panel() -> None:
@@ -365,17 +491,18 @@ def render_chat_panel() -> None:
     render_hex_card()
 
     # Контролы
-    top_left, top_right = st.columns([3, 1])
+    top_left, top_right = st.columns([3, 1.5])
     with top_left:
         st.session_state["selected_category"] = st.selectbox(
-            "Target category",
+            "Целевая категория",
             CATEGORIES,
             index=CATEGORIES.index(st.session_state["selected_category"]),
+            format_func=lambda c: CATEGORY_LABELS.get(c, c),
             help="Категория конкурентов на карте и в анализе гексов.",
         )
     with top_right:
         st.write("")
-        if st.button("🗑️ Clear", use_container_width=True):
+        if st.button("🗑️ Очистить", use_container_width=True):
             # Start a brand-new session so the old one stays intact in DB
             new_chat_id = str(uuid.uuid4())
             st.session_state["chat_id"] = new_chat_id
@@ -384,16 +511,18 @@ def render_chat_panel() -> None:
             st.session_state.pop("opportunity_grid", None)
             st.session_state.pop("agent_heatmap", None)
             st.session_state.pop("_last_click_handled", None)
+            st.session_state.pop("highlighted_hexes", None)
             st.session_state["selected_hex"] = None
+            st.session_state["pinned_hex_id"] = None
             st.rerun()
 
-    with st.expander("Quick actions", expanded=False):
+    with st.expander("Быстрые действия", expanded=False):
         b1, b2 = st.columns(2)
-        if b1.button("📍 Show opportunity grid", use_container_width=True):
+        if b1.button("📍 Показать сетку конкурентов", use_container_width=True):
             chat_id = st.session_state["chat_id"]
             cat = st.session_state["selected_category"]
             cells = compute_opportunity_grid(
-                category=cat, hex_resolution=DEFAULT_HEX_RES
+                category=cat, hex_resolution=DEFAULT_HEX_RES, strategy="aggregate"
             )
             grid_data = {
                 "cells": cells,
@@ -401,15 +530,16 @@ def render_chat_panel() -> None:
                     "category": cat,
                     "hex_resolution": DEFAULT_HEX_RES,
                     "demand_threshold": 0.0,
+                    "strategy": "aggregate",
                 },
             }
             st.session_state["opportunity_grid"] = grid_data
             save_opportunity_grid(chat_id, {'cells': [c.model_dump() for c in cells], 'args': grid_data['args']})
             msg_content = (
-                f"Built opportunity grid for **{cat}** "
-                f"({len(cells)} hex cells, "
-                f"{sum(1 for c in cells if c.is_visible)} visible). "
-                f"Click a hex to see its metrics."
+                f"Построена сетка конкурентов для **{CATEGORY_LABELS.get(cat, cat)}** "
+                f"({len(cells)} гексов, "
+                f"{sum(1 for c in cells if c.is_visible)} видимых). "
+                f"Нажмите на гекс, чтобы увидеть метрики."
             )
             mem = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
             mem.add_assistant_message(msg_content)
@@ -417,12 +547,12 @@ def render_chat_panel() -> None:
             st.session_state["chat_log"] = _load_chat_log_from_db(chat_id)
             st.rerun()
 
-        if b2.button("❓ Where to open?", use_container_width=True):
+        if b2.button("❓ Где открыть?", use_container_width=True):
             cat = st.session_state["selected_category"]
             st.session_state["pending_query"] = (
-                f"Where in the city would be the best location to open "
-                f"a new {cat}? Use the opportunity grid to find hexes "
-                f"with high demand and low competition."
+                f"Где в городе лучше всего открыть новый {CATEGORY_LABELS.get(cat, cat)}? "
+                f"Используй сетку возможностей, чтобы найти гексы "
+                f"с высоким спросом и низкой конкуренцией."
             )
             st.rerun()
 
@@ -432,22 +562,22 @@ def render_chat_panel() -> None:
     with chat_container:
         if not st.session_state["chat_log"]:
             st.caption(
-                "👋 Click a hex on the map, use Quick actions, "
-                "or just ask me about the city."
+                "👋 Кликните на гекс на карте, используйте быстрые действия "
+                "или просто задайте вопрос о городе."
             )
         for msg in st.session_state["chat_log"]:
             with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+                _render_chat_message(msg)
 
     pending = st.session_state.pop("pending_query", None)
     if pending:
-        with st.spinner("Thinking..."):
+        with st.spinner("Думаю..."):
             _send_to_agent(pending)
         st.rerun()
 
-    user_input = st.chat_input("Ask about the city or click a hex on the map...")
+    user_input = st.chat_input("Спросите о городе или кликните на гекс...")
     if user_input:
-        with st.spinner("Thinking..."):
+        with st.spinner("Думаю..."):
             _send_to_agent(user_input)
         st.rerun()
 
@@ -455,7 +585,7 @@ def render_chat_panel() -> None:
 # --- layout -----------------------------------------------------------------
 render_sidebar()
 
-st.title("🗺️ Geo AI Assistant — B2B Site Selection")
+st.title("🗺️ Гео ИИ-Ассистент — Выбор локации B2B")
 st.caption(
     "Анализ городской среды для открытия новой точки. "
     "Кликайте по гексам на карте — увидите метрики и сможете спросить агента."

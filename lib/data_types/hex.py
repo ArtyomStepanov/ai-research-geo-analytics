@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class Hex(BaseModel):
     hex_id: str
+    label: str | None = None
     center_lat: float
     center_lon: float
     boundary: list[tuple[float, float]]
