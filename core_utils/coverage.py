@@ -159,7 +159,7 @@ def _smooth_hex_scores(scores: np.ndarray, hex_ids: list[str]) -> np.ndarray:
 def compute_opportunity_grid(
     category: str = "pharmacy",
     hex_resolution: int = 9,
-    strategy: str = "implant",            # "implant" | "aggregate"
+    strategy: str = "implant",       # "implant" | "aggregate"
     # Параметры Хаффа
     d0_m: float = 500.0,
     beta: float = 3.0,
