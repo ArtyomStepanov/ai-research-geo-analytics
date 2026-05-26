@@ -22,16 +22,16 @@ from .db import init_db, save_opportunity_grid
 from .memory import PersistedMemory
 from .prompts import SYSTEM_PROMPT
 from .tools import (
-    _tool_opportunity_grid,
-    _tool_nearest_hexes,
+    _tool_build_heatmap,
     _tool_distance,
     _tool_filtering,
-    _tool_rank,
-    _tool_search_places,
-    _tool_nearest_places,
-    _tool_search_by_name,
-    _tool_build_heatmap,
     _tool_geocode,
+    _tool_nearest_hexes,
+    _tool_nearest_places,
+    _tool_opportunity_grid,
+    _tool_rank,
+    _tool_search_by_name,
+    _tool_search_places,
 )
 from .tools_schema import TOOLS
 
@@ -92,7 +92,7 @@ def _llm_client_and_model():
     from openai import OpenAI
     base_url = os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY") or ("local" if base_url else None)
-    model = f"gpt://{os.getenv('YANDEX_CLOUD_FOLDER')}/{os.getenv('YANDEX_CLOUD_MODEL', 'gpt-4o-mini')}"
+    model = os.getenv("LLM_MODEL") or os.getenv("OPENAI_MODEL") or "qwen2.5:7b"
     return OpenAI(base_url=base_url, api_key=api_key, timeout=90.0), model
 
 
@@ -103,14 +103,12 @@ def run(query: str, chat_id: str) -> str:
     Returns:
         Final assistant response as string.
     """
-    # Добавляем запрос пользователя в память
-    init_db()  # Создаём таблицу при первом запуске
+    init_db()
 
-    # Используем PersistedMemory, если не передан кастомный объект
     memory = PersistedMemory(chat_id=chat_id, system_prompt=SYSTEM_PROMPT)
 
     memory.add_user_message(query)
-    memory.save()  # Persist user message immediately
+    memory.save()
 
     # Оффлайн-режим (без API)
     if not (os.getenv("OPENAI_API_KEY") or os.getenv("LLM_BASE_URL") or os.getenv("OPENAI_BASE_URL")):
@@ -180,9 +178,9 @@ def run(query: str, chat_id: str) -> str:
 
 
 def main() -> None:
-    memory = PersistedMemory(SYSTEM_PROMPT)
+    import uuid
     query = " ".join(sys.argv[1:])
-    print(run(query, memory=memory))
+    print(run(query, chat_id=str(uuid.uuid4())))
 
 
 if __name__ == "__main__":
